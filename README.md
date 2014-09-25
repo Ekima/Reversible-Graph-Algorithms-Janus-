@@ -7,3 +7,7 @@ Practice code, used for learning the Janus language.
 Reversible graph algorithms and data structures, part of the actual project.
 
 The bachelor's project takes place Fall/Winter 2014.
+
+An online interpreter for the Janus language can be found at:
+
+http://130.226.12.115/pirc/janus-playground/

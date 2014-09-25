@@ -1,0 +1,29 @@
+// Implementation of a simple stack
+// Note: There already exist a stack datastructure and
+// stack functions in Janus, this is merely for practice.
+// Note: When popping, the element in the stack is returned to r.
+
+procedure new_pop(int new_stack[], int stack_ptr, int r)
+    r += new_stack[stack_ptr]
+    new_stack[stack_ptr] -= r
+    stack_ptr -= 1
+
+procedure new_push(int new_stack[], int stack_ptr, int r)
+    new_stack[stack_ptr] += r
+    r -= new_stack[stack_ptr]
+    stack_ptr += 1
+
+procedure test_stack(int new_stack[], int stack_ptr, int r)
+    r += 1
+    call new_push(new_stack, stack_ptr, r)
+    r += 2
+    call new_push(new_stack, stack_ptr, r)
+    call new_pop(new_stack, stack_ptr, r)
+    r -= 2
+    call new_push(new_stack, stack_ptr, r)
+
+procedure main()
+    int new_stack[10] // A stack of size 10
+    int stack_ptr // A stack pointer, may not be altered outside push and pop
+    int r
+    call test_stack(new_stack, stack_ptr, r)

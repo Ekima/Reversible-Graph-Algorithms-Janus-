@@ -1,0 +1,69 @@
+// Various Fibonacci calculations.
+
+// Recursive Fibonacci procedure
+procedure fib(int n, int x1, int x2)
+    if n=0 then
+        x1 += 1
+        x2 += 1
+    else
+        n -= 1
+        call fib(n, x1, x2)
+        x1 += x2
+        x1 <=> x2
+    fi x1=x2
+
+// Returns a single Fibonacci number (r) as well
+// as the initial input (n, x1 and x2).
+procedure fiba(int r, int n, int x1, int x2)
+    call fib(n, x1, x2)
+    r += x1
+    uncall fib(n, x1, x2)
+
+// Returns a single Fibonacci number (r).
+// All other variables must be empty (0).
+// Works for n > 0.
+procedure fibb(int r, int n, int x1, int x2)
+    x1 += 1
+    x2 += 1
+    local int i = 0
+    from i = 0 do
+        x1 += x2
+        x1 <=> x2
+        i += 1
+    until i = n
+    delocal int i = n
+    r += x1
+    from x1 = r do
+        x1 <=> x2
+        x1 -= x2
+        n -= 1
+    until x1 = x2
+    x1 -= 1
+    x2 -= 1
+
+// Main procedure
+// Sets variables and calls procedures.
+procedure main()
+    // Variables for fib
+    int n
+    int x1
+    int x2
+    // Variables for fiba
+    int ar
+    int an
+    int ax1
+    int ax2
+    // Variables for fibb
+    int br
+    int bn
+    int bx1
+    int bx2
+    
+    n += 4
+    call fib(n, x1, x2)
+    
+    an += 4
+    call fiba(ar, an, ax1, ax2)
+    
+    bn += 4
+    call fibb(br, bn, bx1, bx2)

@@ -1,0 +1,41 @@
+/* Simple discrete physical simulation for free-falling objects */
+
+/*
+ * varibale g: gravitational acceleration
+ * variable t: time
+ * variable v: velocity
+ * variable h: height
+ * variable t_end: duration of simulation
+ *
+ * The program works only when the duration of the simulation is
+ * more than 0.
+ */
+ 
+procedure fall(int g, int t, int v, int h, int t_end)
+    local int halfg = g/2
+    from t = 0 do
+        v += g
+        h -= v
+        h += halfg
+        t += 1
+    until t = t_end
+    delocal int halfg = g/2
+
+// Test using the values:
+// g = 10, t = 0, v = 0, h = 176, t_end = 3
+procedure main()
+    int g
+    
+    int t
+    int v
+    int h
+    int t_end
+    
+    g += 10
+    
+    t += 0
+    v += 0
+    h += 176
+    t_end += 3
+    
+    call fall(g, t, v, h, t_end)

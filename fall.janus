@@ -7,8 +7,6 @@
  * variable h: height
  * variable t_end: duration of simulation
  *
- * The program works only when the duration of the simulation is
- * more than 0.
  */
  
 procedure fall(int g, int t, int v, int h, int t_end)
@@ -31,6 +29,11 @@ procedure main()
     int h
     int t_end
     
+    int t_r
+    int v_r
+    int h_r
+    int t_end_r
+    
     g += 10
     
     t += 0
@@ -39,3 +42,11 @@ procedure main()
     t_end += 3
     
     call fall(g, t, v, h, t_end)
+    
+    t_r += 4
+    v_r += 40
+    h_r += 0
+    t_end_r += 4
+    
+    uncall fall(g, t_r, v_r, h_r, t_end_r)
+    show(h_r)

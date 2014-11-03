@@ -24,7 +24,7 @@
  */
  
 procedure enqueue(int queue[], int tailpointer, int item)
-    //Checks if queue and item is safe.
+    // Error checks (input)
     if item = 0 then
         error("Item added to queue is empty (0).")
     fi item = 0
@@ -62,7 +62,7 @@ procedure enqueue(int queue[], int tailpointer, int item)
  */
  
 procedure dequeue(int queue[], int headpointer, int item)
-    // Checks if queue and item is safe.
+    // Error checks (input)
     if item != 0 then
         error("Placeholder not empty (0).")
     fi item != 0

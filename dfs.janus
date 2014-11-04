@@ -1,0 +1,116 @@
+/*
+ * Depth First Search
+ * 
+ * Takes an unweighted graph represented as an adjacency list.
+ * Timestamp info is stored in a separate twodimensional array.
+ * Returns the original graph with a list of timestamps represented the
+ * trees in the graph.
+ *
+ * The adjacency list implementation is described in adjacencylist.janus
+ */
+ 
+/*
+ * getlist gets the contents of a single list in the adjacency list.
+ *
+ * Parameters:
+ * int list[]      A list of adjacency list elements
+ * int start       A pointer to the start of the list to be extracted
+ * int end         A pointer to the end of the list to be extracted
+ * int res[]       A list to store the returned elements in
+ * 
+ * Returns:
+ * A copy of a the items in a list in the adjacency list.
+ */
+  
+procedure getlist(int list[], int start, int end, int res[])
+    // Elements of the wanted list are loaded into res
+    local int r = start
+    from r = start do
+        res[r - start] += list[r]
+        r += 1
+    until r = end
+    delocal int r = end
+
+/*
+ * DFS initializes the depth first search of a graph G at time 0.
+ *
+ * Parameters:
+ * int G[]          A list of adjacency list elements
+ * int Gptrs[]      A list of adjacency list pointers
+ * int timestamps   A two-dimensional array with empty timestamps for each node
+ *                  in the graph
+ *
+ * Returns:
+ * A list of timestamps representing the depth first trees in G, as well as the
+ * original graph G.
+ */
+procedure DFS(int G[], int Gptrs[], int timestamps[])
+    local int time = 0
+    local int i = 0
+    
+    // We run through each individual node and check if they have been visited
+    // (timestamped). If they haven't we run DFSvisit.
+    from i = 0 do
+        if(timestamps[i][0] = 0) then
+            call DFSvisit(G, Gptrs, i, time, timestamps)
+            i += 1
+        fi(timestamps[i - 1][0] != 0)
+    until i = size(Gptrs)
+    
+    delocal int i = size(Gptrs)
+    delocal int time = size(Gptrs) * 2
+    
+procedure DFSvisit(int G[], int Gptrs[], int u, int time, int timestamps[])
+    // The time is incremented and the node gets entry-timestamped
+    time += 1
+    timestamps[u][0] += time
+    
+    // end contains a pointer to the end of the wanted list
+    local int end = 0
+    if u = (size(Gptrs) - 1) then
+        // If we try to get the last list we stop at the end of the element list
+        end += size(G)
+    else
+        // Or else, we stop where the next list starts
+        end += Gptrs[u + 1]
+    fi u = (size(Gptrs) - 1)
+    
+    // We get the adjacent nodes of current node
+    local int adj[end - Gptrs[u]] = {0}
+    call getlist(G, Gptrs[u], end, adj)
+    
+    // The adjacent nodes are checked and if they have not been visited,
+    // DFSvisit is called with the unvisited node
+    local int r = 0
+    from r = 0 do
+        if timestamps[adj[r]-1][0] = 0 then
+            call DFSvisit(G, Gptrs, adj[r]-1, time, timestamps)
+        fi timestamps[adj[r]-1][0] = time
+        r += 1
+    until r = size(adj)
+    delocal int r = size(adj)
+    
+    // The time is incremented and the node gets exit-timestamped
+    time += 1
+    timestamps[u][1] += time
+    
+    uncall getlist(G, Gptrs, u, adj)
+    delocal int adj[end - Gptrs[u]] = {0}
+    
+    // end is delocated
+    if u = (size(Gptrs) - 1) then
+        end -= size(G)
+    else
+        end -= Gptrs[u + 1]
+    fi u = (size(Gptrs) - 1)
+    delocal int end = 0
+
+/*
+ * Main procedure. Creates an adjacency list and runs DFS on it.
+ */
+procedure main()
+    int G[] = {2, 4, 1, 5, 4, 1, 3, 5, 2, 4}
+    int Gptrs[] = {0, 2, 4, 5, 8}
+    int timestamps[size(Gptrs)][2]
+    
+    call DFS(G, Gptrs, timestamps)

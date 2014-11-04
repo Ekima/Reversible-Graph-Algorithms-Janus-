@@ -2,7 +2,7 @@
  * Adjacency list
  * The list is represented as two integer array.
  *
- * The list list contains all list elements, grouped by each list.
+ * The list list contains all adjacent nodes of each node, grouped by nodes.
  * The list ptrs contains pointers to the starting element of each list,
  * and must be ordered in an ascending list.
  */
@@ -47,15 +47,18 @@ procedure getlist(int list[], int ptrs[], int i, int res[])
     delocal int end = 0
  
 procedure main()
+    // Graph with 5 nodes represented as an adjacency list
     int list[] = {2, 4, 1, 5, 4, 1, 3, 5, 2, 4}
     int ptrs[] = {0, 2, 4, 5, 8}
     
+    // Container arrays for the adjacent nodes of each node
     int a[ptrs[1]-ptrs[0]]
     int b[ptrs[2]-ptrs[1]]
     int c[ptrs[3]-ptrs[2]]
     int d[ptrs[4]-ptrs[3]]
     int e[size(list)-ptrs[4]]
     
+    // Transfer each list of adjacent nodes to their respective container array
     call getlist(list, ptrs, 0, a)
     call getlist(list, ptrs, 1, b)
     call getlist(list, ptrs, 2, c)

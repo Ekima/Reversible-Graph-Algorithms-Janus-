@@ -1,0 +1,52 @@
+/*
+ * Adjacency list, version 2
+ * The list is represented as an integer array and a two-dimensional array.
+ *
+ * adjacent contains all adjacent nodes of each node, grouped by nodes,
+ * 
+ * nodes contains pointers to the starting element of each list in the first
+ * row, and can contain information about each node in the following rows.
+ * nodes must be ordered in an ascending list according to the first row.
+ */
+ 
+ /*
+ * getlist gets the contents of a single list in the adjacency list.
+ *
+ * Parameters:
+ * int adjacent[]      A list of adjacency list elements
+ * int start       A pointer to the start of the list to be extracted
+ * int end         A pointer to the end of the list to be extracted
+ * int res[]       A list to store the returned elements in
+ * 
+ * Returns:
+ * A copy of a the items in a list in the adjacency list.
+ */
+ 
+procedure getlist(int adjacent[], int start, int end, int res[])
+    // Elements of the wanted list are loaded into res
+    local int r = start
+    from r = start do
+        res[r - start] += adjacent[r]
+        r += 1
+    until r = end
+    delocal int r = end
+ 
+procedure main()
+    // Graph with 5 nodes represented as an adjacency list
+    int adjacent[] = {2, 4, 1, 5, 4, 1, 3, 5, 2, 4}
+    int ptrs[2][5] = {{0, 2, 4, 5, 8}, {1, 1, 1, 1, 1}}
+    
+    // Container arrays for the adjacent nodes of each node
+    int a[ptrs[0][1]]
+    int b[ptrs[0][2]-ptrs[0][1]]
+    int c[ptrs[0][3]-ptrs[0][2]]
+    int d[ptrs[0][4]-ptrs[0][3]]
+    int e[size(adjacent)-ptrs[0][4]]
+    
+    
+    // Transfer each list of adjacent nodes to their respective container array
+    call getlist(adjacent, ptrs[0][0], ptrs[0][1], a)
+    call getlist(adjacent, ptrs[0][1], ptrs[0][2], b)
+    call getlist(adjacent, ptrs[0][2], ptrs[0][3], c)
+    call getlist(adjacent, ptrs[0][3], ptrs[0][4], d)
+    call getlist(adjacent, ptrs[0][4], size(adjacent), e)

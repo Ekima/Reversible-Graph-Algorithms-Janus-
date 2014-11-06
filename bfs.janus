@@ -1,206 +1,187 @@
+ /*
+  * getlist gets the contents of a single list in the adjacency list.
+  *
+  * Parameters:
+  * int adjacent[]  A list of adjacency list elements
+  * int ptrs[]      A list of pointers to the start of each individual list
+  * int i           The list that should get extracted (numbered)
+  * int res[]       A list to store the returned elements in
+  * 
+  * Returns:
+  * A copy of a the items in a list in the adjacency list.
+  */
+procedure getlist(int adjacent[], int ptrs[], int lsize, int i, int res[])
+    // end contains a pointer to the end of the wanted list
+    local int end = 0
+    if i = lsize - 1 then
+        // If we try to get the last list we stop at the end of the element list
+        end += size(adjacent)
+    else
+        // Or else, we stop where the next list starts
+        end += ptrs[0][i + 1]
+    fi i = lsize - 1
+    
+    // All elements of the wanted list are loaded into res
+    local int r = ptrs[0][i]
+    from r = ptrs[0][i] do
+        res[r - ptrs[0][i]] += adjacent[r]
+        r += 1
+    until r = end
+    delocal int r = end
+    
+    // end is delocated
+    if i = lsize - 1 then
+        end -= size(adjacent)
+    else
+        end -= ptrs[0][i + 1]
+    fi i = lsize - 1
+    delocal int end = 0
+
+/*
+ * enqueue adds an item to a queue.
+ * 
+ * Parameters:
+ * int queue[]      Queue to add item to.
+ * int tailpointer  Pointer to the last item in the queue
+ * int item         Item to add to the queue.
+ * 
+ * Returns:
+ * A queue with the item added to the tail and an empty item (0).
+ *
+ * Errors:
+ * Item added to the queue is empty (0).
+ * Queue is full.
+ */
+ 
+procedure enqueue(int queue[], int tailpointer, int item)
+    // Error checks (input)
+    if item = 0 then
+        error("Item added to queue is empty (0).")
+    fi item = 0
+    if queue[tailpointer] != 0 then
+        error("Queue is full. Cannot enqueue item.")
+    fi queue[tailpointer] != 0
+    
+    // Adds the item to the queue spot and empties the item
+    local int tmp = item
+        queue[tailpointer] += tmp
+        item -= tmp
+    delocal int tmp = queue[tailpointer]
+    
+    // Goes to next queue spot
+    if tailpointer + 1 != size(queue) then
+        tailpointer += 1
+    else
+        tailpointer -= size(queue) - 1
+    fi tailpointer != 0
+
+/*
+ * dequeue removes an item to a queue.
+ * 
+ * Parameters:
+ * int queue[]      Queue to add item to.
+ * int headpointer  Pointer to the first item in the queue
+ * int item         Empty item placeholder.
+ * 
+ * Returns:
+ * A queue with the first item removed and the dequeued item.
+ *
+ * Errors:
+ * Placeholder item not empty (0).
+ * Queue is empty.
+ */
+ 
+procedure dequeue(int queue[], int headpointer, int item)
+    // Error checks (input)
+    if item != 0 then
+        error("Placeholder not empty (0).")
+    fi item != 0
+    if queue[headpointer] = 0 then
+        error("Queue is empty. Tried to remove item from empty queue.")
+    fi queue[headpointer] = 0
+    
+    // Loads the queue item into the placeholder and empties the queue spot
+    local int tmp = queue[headpointer]
+        item += tmp
+        queue[headpointer] -= tmp
+    delocal int tmp = item
+    
+    // Goes to next queue spot
+    if headpointer + 1 != size(queue) then
+        headpointer += 1
+    else
+        headpointer -= size(queue) - 1
+    fi headpointer != 0
+
 /*
 Breadth-first algorithm
 */
 
-procedure BFS(int root[], int v1[], int v2[], int v3[], int v4[], int res0[],
-              int res1[], int res2[], int res3[], int res4[], int queue[])
-    local int set[] = {1, 0, 0, 0, 0}
-    local int queuecount = 1 // Used to keep track of the amount of items in queue
-    local int cur = 1 // Used to keep track of the current item in queue
+procedure BFS(int Gadjacent[], int Gnodes[], int Gsize, int s)
+    // FIFO queue
+    local int queue[Gsize] = {0}
+    local int headpointer = 0
+    local int tailpointer = 0
+    // Local storage
+    local int store = 0
+    local int adjstore = 0
+    // Local storage for adjacency lists
+    local int adj[Gsize] = {0}
+    // Counters
+    local int i = 0
+    local int n = 1
     
-    from cur = 1 do
+    // We mark the current node as visited and enqueues it
+    store += n
+    Gnodes[1][store-1] += store
+    call enqueue(queue, tailpointer, store)
     
-        if queue[0] = cur then
-            local int i = 0
+    from headpointer = 0 do
+        if queue[headpointer] != 0 then
+            // We dequeue a node and gets its adjacency list
+            call dequeue(queue, headpointer, store)
+            call getlist(Gadjacent, Gnodes, Gsize, store, adj)
+            
+            // We check the list and enqueue all unvisited nodes
             from i = 0 do
-                if root[i] = 1 && set[i] = 0 then
-                    res0[i] += 1
-                    set[i] += 1
-                    queuecount += 1
-                    queue[i] += queuecount
-                fi res0[i] = 1
+                if adj[i] != 0 && Gnodes[1][adj[i]-1] = 0 then
+                    n += 1
+                    adjstore += adj[i]
+                    Gnodes[1][adj[i]-1] += n
+                    call enqueue(queue, tailpointer, adjstore)
+                fi Gnodes[1][adj[i]-1] = n
                 i += 1
-            until i = 5
-            delocal int i = 5
-            cur += 1
-        fi queue[0] = cur - 1
-        
-        if queue[1] = cur then
-            local int i = 0
-            from i = 0 do
-                if v1[i] = 1 && set[i] = 0 then
-                    res1[i] += 1
-                    set[i] += 1
-                    queuecount += 1
-                    queue[i] += queuecount
-                fi res1[i] = 1
-                i += 1
-            until i = 5
-            delocal int i = 5
-            cur += 1
-        fi queue[1] = cur - 1
-        
-        if queue[2] = cur then
-            local int i = 0
-            from i = 0 do
-                if v2[i] = 1 && set[i] = 0 then
-                    res2[i] += 1
-                    set[i] += 1
-                    queuecount += 1
-                    queue[i] += queuecount
-                fi res2[i] = 1
-                i += 1
-            until i = 5
-            delocal int i = 5
-            cur += 1
-        fi queue[2] = cur - 1
-        
-        if queue[3] = cur then
-            local int i = 0
-            from i = 0 do
-                if v3[i] = 1 && set[i] = 0 then
-                    res3[i] += 1
-                    set[i] += 1
-                    queuecount += 1
-                    queue[i] += queuecount
-                fi res3[i] = 1
-                i += 1
-            until i = 5
-            delocal int i = 5
-            cur += 1
-        fi queue[3] = cur - 1
-        
-        if queue[4] = cur then
-            local int i = 0
-            from i = 0 do
-                if v4[i] = 1 && set[i] = 0 then
-                    res4[i] += 1
-                    set[i] += 1
-                    queuecount += 1
-                    queue[i] += queuecount
-                fi res4[i] = 1
-                i += 1
-            until i = 5
-            delocal int i = 5
-            cur += 1
-        fi queue[4] = cur - 1
-        
-    until cur = 6
+            until i = Gsize
+            
+            // Remove the content from adj and store
+            uncall getlist(Gadjacent, Gnodes, Gsize, store, adj)
+            store -= Gnodes[1][store-1]
+        fi queue[headpointer] = 0
+    until headpointer = tailpointer
     
-    delocal int cur = 6
-    delocal int queuecount = 5
-    delocal int set[] = {1, 1, 1, 1, 1}
+    // Delocal local variables
+    
+    delocal int n = Gsize
+    delocal int i = 0
+    delocal int adj[Gsize] = {0}
+    delocal int adjstore = 0
+    delocal int store = 0
+    delocal int tailpointer = 0
+    delocal int headpointer = 0
+    delocal int queue[Gsize] = {0}
 
-// procedure printPath(int res0[], int res1[], int res2[], int res3[], int res4[], int s, int v)
-    
-    // if s = v then
-        // printf("Pathstep: %d", s)
-    // else
-        // if s = 0 then
-            // local int i = 0
-                // from i = 0 do
-                    // if res0[i] = 1 then
-                        // call printPath(res0, res1, res2, res3, res4, i, v)
-                    // fi res0[i] = 1
-                    // i += 1
-                // until i = 5
-            // delocal int i = 5
-        // fi s = 0
-        
-        // if s = 1 then
-            // local int i = 0
-                // from i = 0 do
-                    // if res1[i] = 1 then
-                        // call printPath(res0, res1, res2, res3, res4, i, v)
-                    // fi res1[i] = 1
-                    // i += 1
-                // until i = 5
-            // delocal int i = 5
-        // fi s = 1
-        
-        // if s = 2 then
-            // local int i = 0
-                // from i = 0 do
-                    // if res2[i] = 1 then
-                        // call printPath(res0, res1, res2, res3, res4, i, v)
-                    // fi res2[i] = 1
-                    // i += 1
-                // until i = 5
-            // delocal int i = 5
-        // fi s = 2
-        
-        // if s = 3 then
-            // local int i = 0
-                // from i = 0 do
-                    // if res3[i] = 1 then
-                        // call printPath(res0, res1, res2, res3, res4, i, v)
-                    // fi res3[i] = 1
-                    // i += 1
-                // until i = 5
-            // delocal int i = 5
-        // fi s = 3
-        
-        // if s = 4 then
-            // local int i = 0
-                // from i = 0 do
-                    // if res4[i] = 1 then
-                        // call printPath(res0, res1, res2, res3, res4, i, v)
-                    // fi res4[i] = 1
-                    // i += 1
-                // until i = 5
-            // delocal int i = 5
-        // else
-            // error("No path found")
-        // fi s = 4
-    // fi s = v
-    
-    
+/*
+ * Main procedure. Creates an adjacency list and runs BFS, then printpath on it.
+ */
 procedure main()
+    // Adjacency list, list of adjacent nodes
+    int Gadjacent[] = {2, 4, 1, 5, 4, 1, 3, 5, 2, 4}
+    // Adjacency list, node information.
+    // Each node has a pointer to their first element
+    int Gnodes[2][5] = {{0, 2, 4, 5, 8}, {0}}
+    int Gsize = 5
     
-    int queue[] = {1, 0, 0, 0, 0}
-    int queue2[] = {1, 0, 0, 0, 0}
+    int s = 1
     
-    int resa[5]
-    int resb[5]
-    int resc[5]
-    int resd[5]
-    int rese[5]
-    
-    int resa_[5]
-    int resb_[5]
-    int resc_[5]
-    int resd_[5]
-    int rese_[5]
-    
-    int a[] = {0, 1, 0, 0, 1}
-    int b[] = {1, 0, 1, 1, 0}
-    int c[] = {0, 1, 0, 0, 0}
-    int d[] = {0, 1, 0, 0, 1}
-    int e[] = {1, 0, 0, 1, 0}
-    
-    print("Start. \n")
-    print("Initial graph as a adjacency matrix:")
-    show(a)
-    show(b)
-    show(c)
-    show(d)
-    show(e)
-    
-    call BFS(a, b, c, d, e, resa, resb, resc, resd, rese, queue)
-    print("\nBreadth-first tree with a as root:")
-    show(resa)
-    show(resb)
-    show(resc)
-    show(resd)
-    show(rese)
-    print("\n")
-    
-    call BFS(c, b, a, d, e, resc_, resb_, resa_, resd_, rese_, queue2)
-    print("\nBreadth-first tree with c as root:")
-    show(resc_)
-    show(resb_)
-    show(resa_)
-    show(resd_)
-    show(rese_)
-    print("\n")
-//    call printPath(resa, resb, resc, resd, rese, 0, 3)
+    call BFS(Gadjacent, Gnodes, Gsize, s)
+    //call printpath(Gadjacent, Gnodes, s, v)

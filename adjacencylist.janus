@@ -2,8 +2,8 @@
  * Adjacency list
  * The list is represented as two integer array.
  *
- * The list list contains all adjacent nodes of each node, grouped by nodes.
- * The list ptrs contains pointers to the starting element of each list,
+ * adjacent contains all adjacent nodes of each node, grouped by nodes.
+ * ptrs contains pointers to the starting element of each list,
  * and must be ordered in an ascending list.
  */
  
@@ -11,7 +11,7 @@
   * getlist gets the contents of a single list in the adjacency list.
   *
   * Parameters:
-  * int list[]      A list of adjacency list elements
+  * int adjacent[]  A list of adjacency list elements
   * int ptrs[]      A list of pointers to the start of each individual list
   * int i           The list that should get extracted (numbered)
   * int res[]       A list to store the returned elements in
@@ -19,12 +19,12 @@
   * Returns:
   * A copy of a the items in a list in the adjacency list.
   */
-procedure getlist(int list[], int ptrs[], int i, int res[])
+procedure getlist(int adjacent[], int ptrs[], int i, int res[])
     // end contains a pointer to the end of the wanted list
     local int end = 0
     if i = (size(ptrs) - 1) then
         // If we try to get the last list we stop at the end of the element list
-        end += size(list)
+        end += size(adjacent)
     else
         // Or else, we stop where the next list starts
         end += ptrs[i + 1]
@@ -33,14 +33,14 @@ procedure getlist(int list[], int ptrs[], int i, int res[])
     // All elements of the wanted list are loaded into res
     local int r = ptrs[i]
     from r = ptrs[i] do
-        res[r - ptrs[i]] += list[r]
+        res[r - ptrs[i]] += adjacent[r]
         r += 1
     until r = end
     delocal int r = end
     
     // end is delocated
     if i = (size(ptrs) - 1) then
-        end -= size(list)
+        end -= size(adjacent)
     else
         end -= ptrs[i + 1]
     fi i = (size(ptrs) - 1)
@@ -48,7 +48,7 @@ procedure getlist(int list[], int ptrs[], int i, int res[])
  
 procedure main()
     // Graph with 5 nodes represented as an adjacency list
-    int list[] = {2, 4, 1, 5, 4, 1, 3, 5, 2, 4}
+    int adjacent[] = {2, 4, 1, 5, 4, 1, 3, 5, 2, 4}
     int ptrs[] = {0, 2, 4, 5, 8}
     
     // Container arrays for the adjacent nodes of each node
@@ -56,11 +56,11 @@ procedure main()
     int b[ptrs[2]-ptrs[1]]
     int c[ptrs[3]-ptrs[2]]
     int d[ptrs[4]-ptrs[3]]
-    int e[size(list)-ptrs[4]]
+    int e[size(adjacent)-ptrs[4]]
     
     // Transfer each list of adjacent nodes to their respective container array
-    call getlist(list, ptrs, 0, a)
-    call getlist(list, ptrs, 1, b)
-    call getlist(list, ptrs, 2, c)
-    call getlist(list, ptrs, 3, d)
-    call getlist(list, ptrs, 4, e)
+    call getlist(adjacent, ptrs, 0, a)
+    call getlist(adjacent, ptrs, 1, b)
+    call getlist(adjacent, ptrs, 2, c)
+    call getlist(adjacent, ptrs, 3, d)
+    call getlist(adjacent, ptrs, 4, e)

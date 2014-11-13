@@ -1,0 +1,131 @@
+/*
+ * Outline for Kruskal
+ */
+  
+/*
+ * makeedgelist
+ * Returns a list of all the edges in a graph G.
+ */
+procedure makeedgelist(int G[], int edgelist[], int s)
+    local int i = 0, int j = 0
+    
+    from i = 0 do
+        from j = 0 do
+            if G[i][j] != 0 then
+                edgelist[0][s] += G[i][j]
+                edgelist[1][s] += i+1
+                edgelist[2][s] += j+1
+                s += 1
+            fi G[i][j] != 0
+            j += 1
+        until j = size(G)
+        j -= size(G)
+        i += 1
+    until i = size(G)
+    
+    delocal int i = size(G), int j = 0
+
+procedure shortenlist(int list[], int reslist[], int s)
+    local int i = 0
+    from i = 0 do
+        reslist[0][i] += list[0][i]
+        reslist[1][i] += list[1][i]
+        reslist[2][i] += list[2][i]
+        i += 1
+    until i = s
+    delocal int i = s
+
+procedure findsetrec(int setlist[], int u, int v, int retval)
+    if setlist[u-1] != 0 && retval != 1 then
+        if setlist[u-1] = v then
+            retval += 1
+        else
+            findsetrec(setlist, setlist[u-1], v, retval)
+        fi setlist[u-1] = v
+    fi setlist[u-1] != 0
+/*
+ * Findset. Returns 1 if the the two nodes are in the same set and 0 if not.
+ */
+procedure findset(int setlist[], int u, int v, int retval)
+    int i = 0
+    
+    if setlist[u-1] = && setlist[v-1] = 0 then
+        skip
+    else
+        findsetrec(setlist, u, v, retval)
+        findsetrec(setlist, v, u, retval)
+    fi setlist[u-1] = 0 && setlist[v-1] = 0
+    
+    delocal int i = size(setlist)
+
+procedure union(int setlist[], int u, int v)
+    local int i = 0
+    local int j = 0
+    
+    from i = 0 do
+        if setlist[u-1] = 0 then
+            setlist[u] <=> setlist[u][j]
+            j += 1
+        fi j > 0
+        i += 1
+    until i = size(setlist)
+    
+    delocal int i = size(setlist)
+
+/*
+ * mstkruskal.
+ * Takes a weighted, undirected graph G and returns a set A containing a
+ * forest representing a single minimum spanning tree.
+ * G is represented as an adjacency matrix of size n x n, where n is the amount
+ * of nodes in G.
+ * A is represented like a weighted, directed graph in an adjacency matrix and
+ * must be of size n x n.
+ */
+procedure mstkruskal(int G[], int A[], int setlist[],
+                     int edgecount[], int edgesize)    
+    // Gather all of the edges into a list.
+    local int edgelist[3][size(G) * size(G)] = {{0}, {0}, {0}}
+    local int s = 0
+    call makeedgelist(G, edgelist, s)
+    // Shorten the edgelist to only contain the actual amount of edges.
+    local int edges[3][s] = {{0}, {0}, {0}}
+    call shortenlist(edgelist, edges, s)
+    // SORT LIST HERE
+    
+    local int i = 0
+    local int r = 0
+    from i = 0 do
+        r = findset(setlist, edges[
+        if  then
+            A[edges[1][i]][edges[2][i]] += edges[0][i]
+            call union(setlist, edges[1][i], edges[2][i])
+            edgesize += 1
+            edgecount[i] += edgesize
+        fi edgecount[i] = edgesize
+    until i = s
+    delocal int r = 0
+    delocal int i = s
+    
+    uncall makeset(G, setlist)
+    
+    uncall shortenlist(edgelist, edges, s)
+    delocal int edges[3][s] = {{0}, {0}, {0}}
+    uncall makeedgelist(G, edgelist, s)
+    delocal int s = 0
+    delocal int edgelist[3][size(G) * size(G)] = {{0}, {0}, {0}}
+    delocal int setlist[size(G)] = {0}
+
+procedure main()
+    int G[][] = {{0, 2, 0, 5, 0},
+               {2, 0, 0, 0, 4},
+               {0, 0, 0, 4, 0},
+               {5, 0, 4, 0, 7},
+               {0, 4, 0, 7, 0}}
+    int A[5][5] = {{0}, {0}, {0}, {0}, {0}}
+    
+    // Garbage
+    int setlist[size(G)] = {0}
+    int edgecount[size(G) * size(G)] = {0}
+    int edgesize = 0
+    
+    call mstkruskal(G, A, setlist, edgecount, edgesize)

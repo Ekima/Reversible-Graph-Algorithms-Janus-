@@ -47,8 +47,7 @@ procedure getlist(int adjacent[], int start, int end, int res[])
  * updated list of timestamps representing the subtrees of G
  */
 procedure DFS(int Gadjacent[], int Gnodes[], int Gsize)
-    local int time = 0
-    local int i = 0
+    local int time = 0, int i = 0
     
     // We run through each individual node and check if they have been visited
     // (timestamped). If they haven't we run DFSvisit.
@@ -59,8 +58,7 @@ procedure DFS(int Gadjacent[], int Gnodes[], int Gsize)
         i += 1
     until i = Gsize
     
-    delocal int i = Gsize
-    delocal int time = Gsize * 2
+    delocal int time = Gsize * 2, int i = Gsize
 
 /*
  * DFSvisit marks the current node with the current time, then recursively

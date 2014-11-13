@@ -122,11 +122,9 @@ procedure BFS(int Gadjacent[], int Gnodes[], int Gsize, int s,
     // FIFO queue
     local int queue[Gsize] = {0}
     local int tailpointer = headpointer
-    // Local variables
-    local int store = 0 // Stores the current dequeued node
-    local int adjstore = 0 // Stores the current node used in getlist
+    // Storage for dequeued node and adjacent nodes, loopcounter
+    local int store = 0, int adjstore = 0, int i = 0
     local int adj[Gsize] = {0} // Stores the current adjacent nodes
-    local int i = 0 // Loopcounter
     
     // We mark the current node as the source node and enqueue it
     Gnodes[1][s-1] -= 1
@@ -163,10 +161,8 @@ procedure BFS(int Gadjacent[], int Gnodes[], int Gsize, int s,
     
     // Delocal local variables
     
-    delocal int i = 0
     delocal int adj[Gsize] = {0}
-    delocal int adjstore = 0
-    delocal int store = 0
+    delocal int store = 0, int adjstore = 0, int i = 0
     delocal int tailpointer = headpointer
     delocal int queue[Gsize] = {0}
 

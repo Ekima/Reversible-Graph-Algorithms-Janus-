@@ -129,11 +129,11 @@ procedure DFSvisit(int Gadjacent[], int Gnodes[], int Gsize, int u, int time)
  */
 procedure main()
     // Adjacency list, list of adjacent nodes
-    int Gadjacent[] = {2, 4, 1, 5, 4, 1, 3, 5, 2, 4}
+    int Gadjacent[] = {2, 4, 1, 5, 4, 1, 3, 5, 2, 4, 7, 4}
     // Adjacency list, node information.
     // Each node has a pointer to their first element and two timestamps
-    int Gnodes[3][5] = {{0, 2, 4, 5, 8},{0},{0}}
+    int Gnodes[3][7] = {{0, 2, 4, 5, 8, 10, 11},{0},{0}}
     // Number of nodes in G
-    int Gsize = 5
+    int Gsize = 7
     
     call DFS(Gadjacent, Gnodes, Gsize)

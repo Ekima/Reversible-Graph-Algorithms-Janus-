@@ -117,17 +117,16 @@ procedure dequeue(int queue[], int headpointer, int item)
 Breadth-first algorithm
 */
 
-procedure BFS(int Gadjacent[], int Gnodes[], int Gsize, int s, int order[])
+procedure BFS(int Gadjacent[], int Gnodes[], int Gsize, int s,
+              int headpointer, int order[])
     // FIFO queue
     local int queue[Gsize] = {0}
-    local int headpointer = 0
-    local int tailpointer = 0
+    local int tailpointer = headpointer
     // Local variables
     local int store = 0 // Stores the current dequeued node
     local int adjstore = 0 // Stores the current node used in getlist
     local int adj[Gsize] = {0} // Stores the current adjacent nodes
     local int i = 0 // Loopcounter
-    local int n = 1 // Parent counter
     
     // We mark the current node as the source node and enqueue it
     Gnodes[1][s-1] -= 1
@@ -147,9 +146,6 @@ procedure BFS(int Gadjacent[], int Gnodes[], int Gsize, int s, int order[])
                     skip
                 else
                     if Gnodes[1][adj[i]-1] = 0 then
-                        n += 1
-                    fi Gnodes[1][adj[i]-1] = 0
-                    if Gnodes[1][adj[i]-1] = 0 then
                         adjstore += adj[i]
                         Gnodes[1][adj[i]-1] += store
                         call enqueue(queue, tailpointer, adjstore)
@@ -167,13 +163,11 @@ procedure BFS(int Gadjacent[], int Gnodes[], int Gsize, int s, int order[])
     
     // Delocal local variables
     
-    delocal int n = Gsize
     delocal int i = 0
     delocal int adj[Gsize] = {0}
     delocal int adjstore = 0
     delocal int store = 0
-    delocal int tailpointer = 0
-    delocal int headpointer = 0
+    delocal int tailpointer = headpointer
     delocal int queue[Gsize] = {0}
 
 procedure printpath(int Gnodes[], int v)
@@ -193,20 +187,24 @@ procedure printpath(int Gnodes[], int v)
  */
 procedure main()
     // Adjacency list, list of adjacent nodes
-    int Gadjacent[] = {2, 4, 1, 5, 4, 1, 3, 5, 2, 4}
-    int Gsize = 5
+    int Gadjacent[] = {2, 4, 1, 5, 4, 1, 3, 5, 2, 4, 7, 4}
+    int Gsize = 7
     // Adjacency list, node information.
     // Each node has a pointer to their first element
     // Each node stores its parent
-    int Gnodes[2][Gsize] = {{0, 2, 4, 5, 8}, {0}}
+    int Gnodes[2][Gsize] = {{0, 2, 4, 5, 8, 10, 11}, {0}}
+    int headpointer = 0
     int order[Gsize] = {0}
     
     int s = 1
     int v = 3
     
-    call BFS(Gadjacent, Gnodes, Gsize, s, order)
+    call BFS(Gadjacent, Gnodes, Gsize, s, headpointer, order)
     print("A shortest path from source 1 to node 3:")
     call printpath(Gnodes, v)
     v += 2
     print("A shortest path from source 1 to node 5:")
+    call printpath(Gnodes, v)
+    v += 2
+    print("A shortest path from source 1 to node 7:")
     call printpath(Gnodes, v)

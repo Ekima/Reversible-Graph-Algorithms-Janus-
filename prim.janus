@@ -1,0 +1,84 @@
+/*
+ * Prim's Algorithm Outline
+ */
+
+/*
+ * makeedgelist
+ * Returns a list of all the edges in a graph G.
+ */
+procedure makeedgelist(int G[], int edgelist[], int s)
+    local int i = 0, int j = 0
+    
+    from i = 0 do
+        from j = 0 do
+            if G[i][j] != 0 then
+                edgelist[0][s] += G[i][j]
+                edgelist[1][s] += i+1
+                edgelist[2][s] += j+1
+                s += 1
+            fi G[i][j] != 0
+            j += 1
+        until j = size(G)
+        j -= size(G)
+        i += 1
+    until i = size(G)
+    
+    delocal int i = size(G), int j = 0
+
+procedure shortenlist(int list[], int reslist[], int s)
+    local int i = 0
+    from i = 0 do
+        reslist[0][i] += list[0][i]
+        reslist[1][i] += list[1][i]
+        reslist[2][i] += list[2][i]
+        reslist[3][i] += 4294967295
+        reslist[4][i] -= 1
+        i += 1
+    until i = s
+    delocal int i = s
+
+procedure MSTPrim(int G[], int A[], int r)
+    local int edgelist[5][size(G) * size(G)] = {{0}, {0}, {0}}
+    local int s = 0
+    call makeedgelist(G, edgelist, s)
+    // Shorten the edgelist to only contain the actual amount of edges.
+    local int edges[5][s] = {{0}}
+    call shortenlist(edgelist, edges, s)
+    
+    // Convert and create adjacency+ list instead of edgelist?
+    // Will probably(?) work better
+    
+    edges[3][r] -= 4294967295
+    
+    // Sort edges and put in a min-priority queue (FIFO)
+    
+    local int i = 0
+    from headcounter = 0 do
+        u = queue[1][headcounter]
+        local int j = 0
+        from j = 0 do
+            if G[u][i] != 0
+                if edges[?][?] \exi Q && w(u, v) < v.key
+                    edges[3][?] = u
+                    edges[4][?] = w(u, v)
+                    
+            fi G[u][i] != 0
+        until j = size(G)
+    until headcounter = tailpointer
+    delocal int i = size(G) * size(G)
+    
+    uncall shortenlist(edgelist, edges, s)
+    delocal int edges[5][s] = {{0}}
+    uncall makeedgelist(G, edgelist, s)
+    delocal int s = 0
+    delocal int edgelist[5][size(G) * size(G)] = {{0}, {0}, {0}}
+
+procedure main()
+    int G[][] = {{0, 2, 0, 5, 0},
+               {2, 0, 0, 0, 4},
+               {0, 0, 0, 4, 0},
+               {5, 0, 4, 0, 7},
+               {0, 4, 0, 7, 0}}
+    int A[5][5] = {{0}, {0}, {0}, {0}, {0}}
+    int r = 0
+    call MSTPrim(G, A, r)

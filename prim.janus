@@ -1,5 +1,9 @@
 /*
  * Prim's Algorithm Outline
+ * Since the original algorithm takes a graph AND edge weights, a adjacency
+ * list with egde weights might work better
+ * At the moment, the implementation will feature 4294967295 as infinity and
+ * -1 as NIL
  */
 
 /*

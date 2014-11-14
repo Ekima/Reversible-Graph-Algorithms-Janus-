@@ -1,0 +1,25 @@
+/*
+ * Dijkstra's Algorithm (outline)
+ * Implement with a weighted adjacency list (modified to handle relax)?
+ * Should be manageable.
+ */
+
+dijkstra(int G[], int Gadj[], int s) // G as a weighted adjacency list
+    local int nodes[2][size(Gadj] = {{0}}
+    local int i
+    // Initialize nodes[0][i] to infinity and nodes[1][i] to NULL 
+    nodes[0][s] = 0
+    delocal int i = size(Gadj)
+    
+    // Ordered min FIFO queue with edges
+    // Adjacency list with weight information - store in G (edge info) rather
+    // than Gadj (Node info)
+    
+    local int i = 0
+    from headcounter = 0 do
+        u = queue[1][headcounter]
+        headcounter += 1
+        // S unified with u
+        // Relax edges
+    until headcounter = tailpointer
+    delocal int i = size(G) * size(G)

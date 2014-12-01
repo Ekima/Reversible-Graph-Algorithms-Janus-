@@ -101,6 +101,25 @@ procedure shortenlist(int list[], int reslist[], int s)
     until i = s
     delocal int i = s
 
+procedure extractedges(int G[], int edgelist[])
+    local int i = 0, int j = 0, int s = 0
+    
+    from i = 0 do
+        from j = i do
+            if G[i][j] != 0 then
+                edgelist[0][s] += G[i][j]
+                edgelist[1][s] += i+1
+                edgelist[2][s] += j+1
+                s += 1
+            fi G[i][j] != 0
+            j += 1
+        until j = size(G)
+        i += 1
+        j -= size(G) - i
+    until i = size(G)
+    
+    delocal int i = size(G), int j = size(G), int s = size(G)
+
 procedure findset(int a, int b, int array[], int visited[], int visit, int retval)
     visited[a] += visit
     visit += 1
@@ -118,7 +137,7 @@ procedure findset(int a, int b, int array[], int visited[], int visit, int retva
     fi array[a][b] != 0
     visit -= 1
 
-procedure union(int a, int b, int weight, int array[])
+procedure addsubset(int a, int b, int weight, int array[])
     array[a][b] += weight
     if a != b then
         array[b][a] += weight
@@ -133,46 +152,45 @@ procedure union(int a, int b, int weight, int array[])
  * A is represented like a weighted, directed graph in an adjacency matrix and
  * must be of size n x n.
  */
-procedure mstkruskal(int G[], int A[])    
+procedure mstkruskal(int G[], int edgecount, int A[])    
     // Gather all of the edges into a list.
-    local int edgelist[3][size(G) * size(G)] = {{0}, {0}, {0}}
-    local int s = 0
-    call makeedgelist(G, edgelist, s)
-    local int p[s] = {0}
-    call id_perm(p, s)
-    // Shorten the edgelist to only contain the actual amount of edges.
-    local int edges[3][s] = {{0}, {0}, {0}}
-    call shortenlist(edgelist, edges, s)
-    call qsort2(edges, 0, s - 1, p)
+    local int edges[3][edgecount] = {{0}, {0}, {0}}
+    call extractedges(G, edges)
+    // Sort the list using quicksort
+    local int p[edgecount] = {0}
+    call id_perm(p, edgecount)
+    call qsort2(edges, 0, edgecount - 1, p)
     
-    local int i = 0
-    local int r = 0
-    local int visit = 0
-    local int visited[size(G)] = {0}
-    from i = 0 do
-        call findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, r)
-        if r = 0 then
-            uncall findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, r)
-            call union(edges[1][i]-1, edges[2][i]-1, edges[0][i], A)
+    local int i = 0 // Loop counter
+    local int ret = 0 // Return value for 
+    local int visit = 0 // Findset variable
+    local int visited[size(G)] = {0} // Findset variable
+    
+    from i = 0 do // Go through all edges
+        // Findset checks two nodes combined by an edge are in the same subset
+        call findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, ret)
+        if ret = 0 then
+            // If they aren't, the second subset is added to the first
+            uncall findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, ret)
+            call addsubset(edges[1][i]-1, edges[2][i]-1, edges[0][i], A)
         else
-            uncall findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, r)
+            // Or else, we nullify the findset variables
+            uncall findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, ret)
         fi A[edges[1][i]-1][edges[2][i]-1] != 0
         i += 1
-    until i = s
+    until i = edgecount
+    
+    // Delocal values.
     delocal int visited[size(G)] = {0}
     delocal int visit = 0
-    delocal int r = 0
-    delocal int i = s
+    delocal int ret = 0
+    delocal int i = edgecount
     
-    uncall qsort2(edges, 0, s - 1, p)
-    
-    uncall shortenlist(edgelist, edges, s)
-    delocal int edges[3][s] = {{0}, {0}, {0}}
-    uncall id_perm(p, s)
-    delocal int p[s] = {0}
-    uncall makeedgelist(G, edgelist, s)
-    delocal int s = 0
-    delocal int edgelist[3][size(G) * size(G)] = {{0}, {0}, {0}}
+    uncall qsort2(edges, 0, edgecount - 1, p)
+    uncall id_perm(p, edgecount)
+    delocal int p[edgecount] = {0}
+    uncall extractedges(G, edges)
+    delocal int edges[3][edgecount] = {{0}, {0}, {0}}
 
 procedure main()
     int G[][] = {{0, 2, 0, 5, 0},
@@ -182,4 +200,4 @@ procedure main()
                {0, 4, 0, 7, 0}}
     int A[5][5] = {{0}, {0}, {0}, {0}, {0}}
     
-    call mstkruskal(G, A)
+    call mstkruskal(G, 5, A)

@@ -1,7 +1,73 @@
 /*
  * Outline for Kruskal
  */
-  
+
+// in-place quick sort
+
+procedure partition2(int a[], int l, int r, int p, int ord[])
+  local int j = l
+    from  j = l
+    loop  if a[0][j] <= a[0][r] then
+            p += 1
+            local int k = p  // slide a[p..j-1] to the right by one, and move a[j] to position p
+              from  k = p
+              loop  a[0][k] <=> a[0][j]
+                    a[1][k] <=> a[1][j]
+                    a[2][k] <=> a[2][j]
+                    ord[k] <=> ord[j]
+                    k += 1
+              until k = j
+            delocal int k = j  
+          fi (p >= l) && (ord[p] >= ord[j])
+          j += 1
+    until j = r + 1
+  delocal int j = r + 1
+
+// xor-copy to p the index of the maximum of ord[l..r]
+procedure max(int p, int ord[], int l, int r)
+  local stack gb = nil
+    local int m = 0
+      call max_sub(m,ord,l,r,gb)
+      p ^= m
+      uncall max_sub(m,ord,l,r,gb)
+    delocal int m = 0
+  delocal stack gb = nil
+
+procedure max_sub(int m, int ord[], int l, int r, stack gb)
+  m ^= l
+  local int i = l + 1
+    from  i = l + 1
+    loop  if ord[i] >= ord[m] then
+            push(m,gb)
+            m ^= i
+            push(1,gb)
+          else
+            push(0,gb)
+          fi top(gb) = 1
+          i += 1
+    until i = r + 1
+  delocal int i = r + 1
+
+procedure qsort2(int a[], int l, int r, int p[])
+  if l < r then
+    local int q = l - 1     // q remembers where to divide
+      call partition2(a,l,r,q,p)
+      call qsort2(a,l,q-1,p)
+      call qsort2(a,q+1,r,p)
+      call max(q,p,l,r)     // zero clear q
+    delocal int q = 0
+  fi l < r
+
+// Setting to p[] identity permutation of length n
+procedure id_perm(int p[], int n)
+  local int i = 0
+    from  i = 0
+    loop  p[i] ^= i
+          i += 1
+    until i = n
+  delocal int i = n
+
+ 
 /*
  * makeedgelist
  * Returns a list of all the edges in a graph G.
@@ -35,42 +101,28 @@ procedure shortenlist(int list[], int reslist[], int s)
     until i = s
     delocal int i = s
 
-procedure findsetrec(int setlist[], int u, int v, int retval)
-    if setlist[u-1] != 0 && retval != 1 then
-        if setlist[u-1] = v then
-            retval += 1
-        else
-            findsetrec(setlist, setlist[u-1], v, retval)
-        fi setlist[u-1] = v
-    fi setlist[u-1] != 0
-/*
- * Findset. Returns 1 if the the two nodes are in the same set and 0 if not.
- */
-procedure findset(int setlist[], int u, int v, int retval)
-    int i = 0
-    
-    if setlist[u-1] = && setlist[v-1] = 0 then
-        skip
+procedure findset(int a, int b, int array[], int visited[], int visit, int retval)
+    visited[a] += visit
+    visit += 1
+    if array[a][b] != 0  then
+        retval += 1
     else
-        findsetrec(setlist, u, v, retval)
-        findsetrec(setlist, v, u, retval)
-    fi setlist[u-1] = 0 && setlist[v-1] = 0
-    
-    delocal int i = size(setlist)
+        local int i = 0
+        from i = 0 do
+            if array[a][i] != 0 && a != i && visited[i] = 0 && retval != 1 then
+                call findset(i, b, array, visited, visit, retval)
+            fi array[a][i] != 0 && a != i && visited[i] = visit
+            i += 1
+        until i = size(array)
+        delocal int i = size(array)
+    fi array[a][b] != 0
+    visit -= 1
 
-procedure union(int setlist[], int u, int v)
-    local int i = 0
-    local int j = 0
-    
-    from i = 0 do
-        if setlist[u-1] = 0 then
-            setlist[u] <=> setlist[u][j]
-            j += 1
-        fi j > 0
-        i += 1
-    until i = size(setlist)
-    
-    delocal int i = size(setlist)
+procedure union(int a, int b, int weight, int array[])
+    array[a][b] += weight
+    if a != b then
+        array[b][a] += weight
+    fi a != b
 
 /*
  * mstkruskal.
@@ -81,39 +133,46 @@ procedure union(int setlist[], int u, int v)
  * A is represented like a weighted, directed graph in an adjacency matrix and
  * must be of size n x n.
  */
-procedure mstkruskal(int G[], int A[], int setlist[],
-                     int edgecount[], int edgesize)    
+procedure mstkruskal(int G[], int A[])    
     // Gather all of the edges into a list.
     local int edgelist[3][size(G) * size(G)] = {{0}, {0}, {0}}
     local int s = 0
     call makeedgelist(G, edgelist, s)
+    local int p[s] = {0}
+    call id_perm(p, s)
     // Shorten the edgelist to only contain the actual amount of edges.
     local int edges[3][s] = {{0}, {0}, {0}}
     call shortenlist(edgelist, edges, s)
-    // SORT LIST HERE
+    call qsort2(edges, 0, s - 1, p)
     
     local int i = 0
     local int r = 0
+    local int visit = 0
+    local int visited[size(G)] = {0}
     from i = 0 do
-        r = findset(setlist, edges[
-        if  then
-            A[edges[1][i]][edges[2][i]] += edges[0][i]
-            call union(setlist, edges[1][i], edges[2][i])
-            edgesize += 1
-            edgecount[i] += edgesize
-        fi edgecount[i] = edgesize
+        call findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, r)
+        if r = 0 then
+            uncall findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, r)
+            call union(edges[1][i]-1, edges[2][i]-1, edges[0][i], A)
+        else
+            uncall findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, r)
+        fi A[edges[1][i]-1][edges[2][i]-1] != 0
+        i += 1
     until i = s
+    delocal int visited[size(G)] = {0}
+    delocal int visit = 0
     delocal int r = 0
     delocal int i = s
     
-    uncall makeset(G, setlist)
+    uncall qsort2(edges, 0, s - 1, p)
     
     uncall shortenlist(edgelist, edges, s)
     delocal int edges[3][s] = {{0}, {0}, {0}}
+    uncall id_perm(p, s)
+    delocal int p[s] = {0}
     uncall makeedgelist(G, edgelist, s)
     delocal int s = 0
     delocal int edgelist[3][size(G) * size(G)] = {{0}, {0}, {0}}
-    delocal int setlist[size(G)] = {0}
 
 procedure main()
     int G[][] = {{0, 2, 0, 5, 0},
@@ -123,9 +182,4 @@ procedure main()
                {0, 4, 0, 7, 0}}
     int A[5][5] = {{0}, {0}, {0}, {0}, {0}}
     
-    // Garbage
-    int setlist[size(G)] = {0}
-    int edgecount[size(G) * size(G)] = {0}
-    int edgesize = 0
-    
-    call mstkruskal(G, A, setlist, edgecount, edgesize)
+    call mstkruskal(G, A)

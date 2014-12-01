@@ -58,7 +58,7 @@ procedure MSTPrim(int G[], int A[], int r)
     
     local int i = 0
     from headcounter = 0 do
-        u = queue[1][headcounter]
+        u += queue[1][headcounter]
         local int j = 0
         from j = 0 do
             if G[u][i] != 0

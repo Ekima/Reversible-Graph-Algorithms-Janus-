@@ -1,0 +1,44 @@
+procedure findset(int a, int b, int array[], int visited[], int visit, int retval)
+    visited[a] += visit
+    visit += 1
+    if array[a][b] != 0 then
+        retval += 1
+    else
+        local int i = 0
+        from i = 0 do
+            if array[a][i] != 0 && a != i && visited[i] = 0 && retval != 1 then
+                call findset(i, b, array, visited, visit, retval)
+            fi array[a][i] != 0 && a != i && visited[i] = visit
+            i += 1
+        until i = size(array)
+        delocal int i = size(array)
+    fi array[a][b] != 0
+    visit -= 1
+
+procedure union(int a, int b, int weight, int array[])
+    array[a][b] += weight
+    if a != b then
+        array[b][a] += weight
+    fi a != b
+
+procedure main()
+    int A[5][5]
+    int retval
+    int visited[size(A)]
+    int visit = 1
+    
+    call union(0, 0, 2, A)
+    call union(0, 3, 3, A)
+    call union(3, 4, 1, A)
+    
+    call findset(0, 1, A, visited, visit, retval)
+    printf("Edge is not in set (0): %d", retval)
+    uncall findset(0, 1, A, visited, visit, retval)
+    
+    call findset(0, 0, A, visited, visit, retval)
+    printf("Edge is in set (1): %d", retval)
+    uncall findset(0, 0, A, visited, visit, retval)
+    
+    call findset(0, 4, A, visited, visit, retval)
+    printf("Edge is in set (1): %d", retval)
+    uncall findset(0, 4, A, visited, visit, retval)

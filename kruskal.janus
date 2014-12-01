@@ -76,7 +76,7 @@ procedure makeedgelist(int G[], int edgelist[], int s)
     local int i = 0, int j = 0
     
     from i = 0 do
-        from j = 0 do
+        from j = i do
             if G[i][j] != 0 then
                 edgelist[0][s] += G[i][j]
                 edgelist[1][s] += i+1
@@ -85,11 +85,11 @@ procedure makeedgelist(int G[], int edgelist[], int s)
             fi G[i][j] != 0
             j += 1
         until j = size(G)
-        j -= size(G)
         i += 1
+        j -= size(G) - i
     until i = size(G)
     
-    delocal int i = size(G), int j = 0
+    delocal int i = size(G), int j = size(G)
 
 procedure shortenlist(int list[], int reslist[], int s)
     local int i = 0

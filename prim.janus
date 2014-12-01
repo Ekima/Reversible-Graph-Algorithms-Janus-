@@ -41,6 +41,16 @@ procedure shortenlist(int list[], int reslist[], int s)
     until i = s
     delocal int i = s
 
+/* Res must be infinity (4294967295) */ 
+procedure extractmin(int list[], int i, int cur, int res)
+    if i < size(list) then
+        if res > list[i] then
+            
+        else
+            
+        fi res > list[i]
+    fi i < size(list)
+
 procedure MSTPrim(int G[], int A[], int r)
     local int edgelist[5][size(G) * size(G)] = {{0}, {0}, {0}}
     local int s = 0

@@ -1,9 +1,19 @@
 /*
- * Outline for Kruskal
+ * Kruskal's Algorithm
+ * Takes a weighted, undirected graph G and returns a set A containing a
+ * forest representing a single minimum spanning tree.
+ * G is represented as an adjacency matrix of size n x n, where n is the amount
+ * of nodes in G, as well as a variable edgecount containing the amount of
+ * edges in the graph.
+ * A is represented like a weighted, directed graph in an adjacency matrix and
+ * must be of size n x n.
  */
 
-// in-place quick sort
+/****************** START QUICKSORT *******************/
+/* Created by Holger Bock Axelsen and Tetsuo Yokoyama */
+/****************** START QUICKSORT *******************/
 
+// in-place quick sort
 procedure partition2(int a[], int l, int r, int p, int ord[])
   local int j = l
     from  j = l
@@ -67,40 +77,21 @@ procedure id_perm(int p[], int n)
     until i = n
   delocal int i = n
 
- 
+/******************* END QUICKSORT ********************/
+/* Created by Holger Bock Axelsen and Tetsuo Yokoyama */
+/******************* END QUICKSORT ********************/  
+
 /*
- * makeedgelist
- * Returns a list of all the edges in a graph G.
+ * extractedges extract the edge information (starting node, ending node,
+ * weight) of a graph G and returns it in a list.
+ *
+ * Parameters:
+ * int array[]      An adjacency matrix.
+ * int edgelist[]   An empty array of size |E|
+ *
+ * Returns:
+ * A list of all edges in G.
  */
-procedure makeedgelist(int G[], int edgelist[], int s)
-    local int i = 0, int j = 0
-    
-    from i = 0 do
-        from j = i do
-            if G[i][j] != 0 then
-                edgelist[0][s] += G[i][j]
-                edgelist[1][s] += i+1
-                edgelist[2][s] += j+1
-                s += 1
-            fi G[i][j] != 0
-            j += 1
-        until j = size(G)
-        i += 1
-        j -= size(G) - i
-    until i = size(G)
-    
-    delocal int i = size(G), int j = size(G)
-
-procedure shortenlist(int list[], int reslist[], int s)
-    local int i = 0
-    from i = 0 do
-        reslist[0][i] += list[0][i]
-        reslist[1][i] += list[1][i]
-        reslist[2][i] += list[2][i]
-        i += 1
-    until i = s
-    delocal int i = s
-
 procedure extractedges(int G[], int edgelist[])
     local int i = 0, int j = 0, int s = 0
     
@@ -120,14 +111,35 @@ procedure extractedges(int G[], int edgelist[])
     
     delocal int i = size(G), int j = size(G), int s = size(G)
 
-procedure findset(int a, int b, int array[], int visited[], int visit, int retval)
+/*
+ * findset recursively searches an adjacency matrix for a connection between a
+ * node a and a node b.
+ *
+ * Parameters:
+ * int a            First node of edge.
+ * int b            Second node of edge.
+ * int array[]      An adjacency matrix.
+ * int visited[]    An empty array of size |V|
+ * int visit        A counter value initialized to 0
+ * int retval       The return value
+ *
+ * Returns:
+ * A returnvalue retval, 1 if a and b are connected by edges and 0 if they are
+ * not.
+ */
+procedure findset(int a, int b, int array[],
+                  int visited[], int visit, int retval)
+    // Visited and visit are used to keep track of which nodes have been visited
+    // Once all nodes have been visited, we stop the recursion
     visited[a] += visit
     visit += 1
+    
     if array[a][b] != 0  then
-        retval += 1
+        retval += 1 // The element has been found, we return 1
     else
         local int i = 0
         from i = 0 do
+            // Check for edges of current node a, call function recursively
             if array[a][i] != 0 && a != i && visited[i] = 0 && retval != 1 then
                 call findset(i, b, array, visited, visit, retval)
             fi array[a][i] != 0 && a != i && visited[i] = visit
@@ -137,20 +149,38 @@ procedure findset(int a, int b, int array[], int visited[], int visit, int retva
     fi array[a][b] != 0
     visit -= 1
 
-procedure addsubset(int a, int b, int weight, int array[])
+/*
+ * addedge creates a weighted edge between two nodes, a and b, in a
+ * two-dimensional array / adjacency matrix. array[a][b] should be empty before
+ * adding the edge for a proper result. a and b should be within the range of
+ * the array.
+ *
+ * Parameters:
+ * int a            First node of edge.
+ * int b            Second node of edge.
+ * int weight       Weight of edge to be added.
+ * int array[]      An adjacency matrix. 
+ *
+ * Returns:
+ * An adjacency matrix with a new edge between a and b.
+ */
+procedure addedge(int a, int b, int weight, int array[])
     array[a][b] += weight
-    if a != b then
+    if a != b then // Symmetric edge only added when not in the diagonal
         array[b][a] += weight
     fi a != b
 
 /*
- * mstkruskal.
- * Takes a weighted, undirected graph G and returns a set A containing a
- * forest representing a single minimum spanning tree.
- * G is represented as an adjacency matrix of size n x n, where n is the amount
- * of nodes in G.
- * A is represented like a weighted, directed graph in an adjacency matrix and
- * must be of size n x n.
+ * mstkruskal is the main algorithm, creating a minimum spanning tree from a
+ * undirected, weighted graph.
+ *
+ * Parameters:
+ * int G[]          An adjacency matrix representing G
+ * int edgecount    The number of edges in the graph G
+ * int A[]          An empty adjacency matrix for storing the result
+ *
+ * Returns:
+ * An adjacency matrix containing a minimum spanning tree of G.
  */
 procedure mstkruskal(int G[], int edgecount, int A[])    
     // Gather all of the edges into a list.
@@ -161,8 +191,7 @@ procedure mstkruskal(int G[], int edgecount, int A[])
     call id_perm(p, edgecount)
     call qsort2(edges, 0, edgecount - 1, p)
     
-    local int i = 0 // Loop counter
-    local int ret = 0 // Return value for 
+    local int i = 0, int ret = 0
     local int visit = 0 // Findset variable
     local int visited[size(G)] = {0} // Findset variable
     
@@ -172,7 +201,7 @@ procedure mstkruskal(int G[], int edgecount, int A[])
         if ret = 0 then
             // If they aren't, the second subset is added to the first
             uncall findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, ret)
-            call addsubset(edges[1][i]-1, edges[2][i]-1, edges[0][i], A)
+            call addedge(edges[1][i]-1, edges[2][i]-1, edges[0][i], A)
         else
             // Or else, we nullify the findset variables
             uncall findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, ret)
@@ -183,8 +212,7 @@ procedure mstkruskal(int G[], int edgecount, int A[])
     // Delocal values.
     delocal int visited[size(G)] = {0}
     delocal int visit = 0
-    delocal int ret = 0
-    delocal int i = edgecount
+    delocal int i = edgecount, int ret = 0
     
     uncall qsort2(edges, 0, edgecount - 1, p)
     uncall id_perm(p, edgecount)

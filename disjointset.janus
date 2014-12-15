@@ -1,0 +1,211 @@
+/*
+ * Disjoint set data structure.
+ * Has three functions: makeset, union and findset
+ * Uses a linked list with a weighted-union heuristic, thus hopefully
+ * maintaining O(m + nlgn) time, where m is a sequence of the three functions
+ * and n is he amount of makeset operations.
+ * The data structure is maintained by two two-dimensional array,
+ * containing node information (next node, which set it belongs to), and set
+ * information (head, tail and length).
+ */
+
+/*
+ * makeset creates a node for a single element and adds it to a new set.
+ *
+ * Parameters:
+ * int x            Numbered element to be added - Should NOT be in the list
+ *                  currently.
+ * int nodes[]      A list of all current nodes added to the data structure. 
+ * int sets[]       A list of all current sets added to the data structure.
+ *
+ * Postcondition:
+ * A disjoint set data structure with the added element
+ */
+procedure makeset(int x, int nodes[], int sets[])
+    nodes[x][0] -= 1 // Next element, initially points to no element
+    nodes[x][1] += x // Part of its own set
+    sets[x][0] += x // Head
+    sets[x][1] += x // Tail
+    sets[x][2] += 1 // Length
+
+/*
+ * searchnodes traverses through a linked list and changes the parent sets
+ *
+ * Parameters:
+ * int i            Current node
+ * int newset       The new parent set
+ * int oldset       The current parent set
+ * int nodes[]      A list of all current nodes added to the data structure. 
+ * int sets[]       A list of all current sets added to the data structure.
+ *
+ * Postcondition:
+ * A disjoint set data structure with the added element
+ */
+procedure searchnodes(int i, int newset, int oldset, int nodes[], int sets[])
+    nodes[i][1] -= oldset
+    nodes[i][1] += newset
+    if nodes[i][0] != -1 then
+        call searchnodes(nodes[i][0], newset, oldset, nodes, sets)
+    fi nodes[i][0] != -1
+
+/*
+ * union combines two sets.
+ *
+ * Parameters:
+ * int x            First set
+ * int y            Second set
+ * int nodes[]      A list of all current nodes added to the data structure. 
+ * int sets[]       A list of all current sets added to the data structure.
+ *
+ * Postcondition:
+ * The combined set of x and y are added to the data structure
+ */
+procedure union(int x, int y, int nodes[], int sets[],
+                int splits[], int splitcounter)
+    if sets[nodes[y][1]][2] = 0 || sets[nodes[x][1]][2] = 0 then
+        error("Trying to perform union with an empty set")
+    fi sets[nodes[y][1]][2] = 0 || sets[nodes[x][1]][2] = 0
+                
+    if sets[nodes[x][1]][2] >= sets[nodes[y][1]][2] && x != y then
+        splits[splitcounter][0] += sets[nodes[x][1]][1] // Tail of x-set
+        splits[splitcounter][1] += sets[nodes[y][1]][0] // Head of y-set
+        splits[splitcounter][2] += sets[nodes[y][1]][2] // Length of y-set
+        
+        // Set the tailnode of the x set to point to the headnode of the y set
+        nodes[x][0] += splits[splitcounter][1] + 1
+        
+        // Set the tail of the x set to the tail of the y set
+        sets[nodes[x][1]][1] -= splits[splitcounter][0]
+        local int ytail = sets[nodes[y][1]][1]
+        sets[nodes[x][1]][1] += ytail
+        delocal int ytail = sets[nodes[y][1]][1]
+        
+        // Set all values in the y-set to 0
+        sets[nodes[y][1]][0] -= splits[splitcounter][1]
+        sets[nodes[y][1]][1] -= sets[nodes[x][1]][1]
+        sets[nodes[y][1]][2] -= splits[splitcounter][2]
+        
+        call searchnodes(splits[splitcounter][1], nodes[x][1],
+                         splits[splitcounter][1], nodes, sets)
+        
+        // Add the length of y's set to the length of x's set
+        sets[nodes[x][1]][2] += splits[splitcounter][2]
+    else
+        splits[splitcounter][0] += sets[nodes[y][1]][1] // Tail of y-set
+        splits[splitcounter][1] += sets[nodes[x][1]][0] // Head of x-set
+        splits[splitcounter][2] += sets[nodes[x][1]][2] // Length of x-set
+        splits[splitcounter][3] += 1 // Entered second branch
+        
+        // Set the tailnode of the y set to point to the headnode of the x set
+        nodes[y][0] += splits[splitcounter][1] + 1
+        
+        // Set the tail of the y set to the tail of the x set
+        sets[nodes[y][1]][1] -= splits[splitcounter][0]
+        local int xtail = sets[nodes[x][1]][1]
+        sets[nodes[y][1]][1] += xtail
+        delocal int xtail = sets[nodes[x][1]][1]
+        
+        // Set all values in the x-set to 0
+        sets[nodes[x][1]][0] -= splits[splitcounter][1]
+        sets[nodes[x][1]][1] -= sets[nodes[y][1]][1]
+        sets[nodes[x][1]][2] -= splits[splitcounter][2]
+        
+        call searchnodes(splits[splitcounter][1], nodes[y][1],
+                         splits[splitcounter][1], nodes, sets)
+        
+        // Add the length of x's set to the length of y's set
+        sets[nodes[y][1]][2] += splits[splitcounter][2]
+    fi splits[splitcounter][3] = 0 && x != y
+    splitcounter += 1
+    
+/*
+ * findset checks if two nodes are in the same set.
+ *
+ * Parameters:
+ * int x            First node
+ * int y            Second node
+ * int nodes[]      A list of all current nodes added to the data structure. 
+ * int found        A truth value, must initially be 0
+ *
+ * Postcondition:
+ * found = 1 if the nodes are in the same set, found = 0 if they are not
+ */
+procedure findset(int x, int y, int nodes[], int found)
+    if nodes[x][1] = nodes[y][1] then
+        found += 1
+    fi nodes[x][1] = nodes[y][1]
+
+/*
+ * Main procedure. Tests the functions.
+ */
+procedure main()
+    int G[][] = {{0, 2, 0, 5, 0},
+               {2, 0, 0, 0, 4},
+               {0, 0, 0, 4, 0},
+               {5, 0, 4, 0, 7},
+               {0, 4, 0, 7, 0}}
+    int nodes[size(G)][2] = {{0}, {0}}
+    int sets[size(G)][3] = {{0}, {0}, {0}}
+    int splitgarbage[size(G)][4] = {{0}, {0}, {0}, {0}}
+    int splitcounter = 0
+    
+    local int i = 0
+    from i = 0 do
+        call makeset(i, nodes, sets)
+        i += 1
+    until i = size(G)
+    delocal int i = size(G)
+    
+    local int found = 0
+    call findset(0, 1, nodes, found)
+    if found = 0 then
+        printf("Node 1 and 2 are not in the same set")
+    else
+        printf("Node 1 and 2 are in the same set")
+    fi found = 0
+    uncall findset(0, 1, nodes, found)
+    delocal int found = 0
+    
+    call union(0, 1, nodes, sets, splitgarbage, splitcounter)
+    local int found = 0
+    call findset(0, 1, nodes, found)
+    if found = 0 then
+        printf("Node 1 and 2 are not in the same set")
+    else
+        printf("Node 1 and 2 are in the same set")
+    fi found = 0
+    uncall findset(0, 1, nodes, found)
+    delocal int found = 0
+    
+    call union(3, 4, nodes, sets, splitgarbage, splitcounter)
+    local int found = 0
+    call findset(3, 4, nodes, found)
+    if found = 0 then
+        printf("Node 4 and 5 are not in the same set")
+    else
+        printf("Node 4 and 5 are in the same set")
+    fi found = 0
+    uncall findset(3, 4, nodes, found)
+    delocal int found = 0
+    
+    call union(2, 4, nodes, sets, splitgarbage, splitcounter)
+    local int found = 0
+    call findset(2, 4, nodes, found)
+    if found = 0 then
+        printf("Node 3 and 5 are not in the same set")
+    else
+        printf("Node 3 and 5 are in the same set")
+    fi found = 0
+    uncall findset(2, 4, nodes, found)
+    delocal int found = 0
+    
+    call union(4, 1, nodes, sets, splitgarbage, splitcounter)
+    local int found = 0
+    call findset(4, 1, nodes, found)
+    if found = 0 then
+        printf("Node 5 and 2 are not in the same set")
+    else
+        printf("Node 5 and 2 are in the same set")
+    fi found = 0
+    uncall findset(4, 1, nodes, found)
+    delocal int found = 0

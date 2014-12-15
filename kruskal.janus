@@ -182,43 +182,40 @@ procedure addedge(int a, int b, int weight, int array[])
  * Returns:
  * An adjacency matrix containing a minimum spanning tree of G.
  */
-procedure mstkruskal(int G[], int edgecount, int A[])    
+procedure mstkruskal(int G[], int edgecount, int A[])
+    // Initialize variables for loop and findset
+    local int i = 0, int ret = 0, int visit = 0
+    local int visited[size(G)] = {0}
+    
     // Gather all of the edges into a list.
     local int edges[3][edgecount] = {{0}, {0}, {0}}
     call extractedges(G, edges)
-    // Sort the list using quicksort
+    // Sort the edge list using quicksort
     local int p[edgecount] = {0}
     call id_perm(p, edgecount)
     call qsort2(edges, 0, edgecount - 1, p)
-    
-    local int i = 0, int ret = 0
-    local int visit = 0 // Findset variable
-    local int visited[size(G)] = {0} // Findset variable
     
     from i = 0 do // Go through all edges
         // Findset checks two nodes combined by an edge are in the same subset
         call findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, ret)
         if ret = 0 then
-            // If they aren't, the second subset is added to the first
+            // If they aren't, the two nodes are connected
             uncall findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, ret)
             call addedge(edges[1][i]-1, edges[2][i]-1, edges[0][i], A)
         else
-            // Or else, we nullify the findset variables
             uncall findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, ret)
         fi A[edges[1][i]-1][edges[2][i]-1] != 0
         i += 1
     until i = edgecount
     
     // Delocal values.
-    delocal int visited[size(G)] = {0}
-    delocal int visit = 0
-    delocal int i = edgecount, int ret = 0
-    
     uncall qsort2(edges, 0, edgecount - 1, p)
     uncall id_perm(p, edgecount)
     delocal int p[edgecount] = {0}
     uncall extractedges(G, edges)
     delocal int edges[3][edgecount] = {{0}, {0}, {0}}
+    delocal int visited[size(G)] = {0}
+    delocal int i = edgecount, int ret = 0, int visit = 0
 
 procedure main()
     int G[][] = {{0, 2, 0, 5, 0},

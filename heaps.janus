@@ -1,0 +1,76 @@
+/* Minimum-priority queue heap implementation */
+
+
+//procedure insert(S, x)
+
+procedure minimum(int A[], int min)
+    min += A[0]
+
+procedure extractmin(int A[], int heapsize, int min)
+    if heapsize < 1 then
+        error("Heap underflow")
+    fi heapsize < 1
+    
+    min += A[0]
+    A[0] -= min
+    A[0] += 4294967295
+    
+    A[0] <=> A[heapsize-1]
+    heapsize -= 1
+    call minheapify(A, heapsize, 0)
+
+procedure minheapify(int A[], int heapsize, int i)
+    local int left = 0, int right = 0, int min = 0
+    call left(i, left)
+    call right(i, right)
+    
+    if left <= heapsize && A[left] < A[i] then
+        min += left
+        if right <= heapsize && A[right] < A[min] then
+            min -= left
+            min += right
+        fi right <= heapsize && A[right] < A[left]
+    else
+        min += i
+        if right <= heapsize && A[right] < A[min] then
+            min -= i
+            min += right
+        fi right <= heapsize && A[right] < A[i]
+    fi left <= heapsize && A[left] < A[i]
+    
+    if min != i then
+        A[i] <=> A[min]
+        call minheapify(A, heapsize, min)
+    fi min != i
+    
+    uncall right(i, right)
+    uncall left(i, left)
+    delocal int left = 0, int right = 0, int min = i
+
+procedure parent(int i, int parent)
+    parent += i / 2
+
+procedure left(int i, int left)
+    left += 2 * i
+
+procedure right(int i, int right)
+    right += 2 * i + 1
+
+procedure main()
+    int A[] = {4, 3, 2, 1, 0}
+    //int A[] = {0, 1, 2, 3, 4}
+    int heapsize = 5
+    int i = 2
+    
+    int min1 = 0
+    int min2 = 0
+    int min3 = 0
+    int min4 = 0
+    int min5 = 0
+    
+    call extractmin(A, heapsize, min1)
+    call extractmin(A, heapsize, min2)
+    call extractmin(A, heapsize, min3)
+    call extractmin(A, heapsize, min4)
+    call extractmin(A, heapsize, min5)
+    

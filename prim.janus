@@ -1,98 +1,116 @@
 /*
  * Prim's Algorithm Outline
- * Since the original algorithm takes a graph AND edge weights, a adjacency
- * list with egde weights might work better
  * At the moment, the implementation will feature 4294967295 as infinity and
  * -1 as NIL
  */
+ 
+ /******* ADJACENCY LIST FUNCTIONS START *******/
+ 
+ /*
+  * getlist gets the contents of a single list in the adjacency list.
+  *
+  * Parameters:
+  * int adjacent[]  A list of adjacency list elements
+  * int ptrs[]      A list of pointers to the start of each individual list
+  * int i           The list that should get extracted (numbered)
+  * int res[]       A list to store the returned elements in
+  * 
+  * Returns:
+  * A copy of a the items in a list in the adjacency list.
+  */
+procedure getlist(int adjacent[], int ptrs[], int i, int res[])
+    // end contains a pointer to the end of the wanted list
+    local int end = 0
+    if i = (size(ptrs) - 1) then
+        // If we try to get the last list we stop at the end of the element list
+        end += size(adjacent)
+    else
+        // Or else, we stop where the next list starts
+        end += ptrs[i + 1]
+    fi i = (size(ptrs) - 1)
+    
+    // All elements of the wanted list are loaded into res
+    local int r = ptrs[i]
+    from r = ptrs[i] do
+        res[r - ptrs[i]] += adjacent[r]
+        r += 1
+    until r = end
+    delocal int r = end
+    
+    // end is delocated
+    if i = (size(ptrs) - 1) then
+        end -= size(adjacent)
+    else
+        end -= ptrs[i + 1]
+    fi i = (size(ptrs) - 1)
+    delocal int end = 0
 
-/*
- * makeedgelist
- * Returns a list of all the edges in a graph G.
+ /******** ADJACENCY LIST FUNCTIONS END ********/
+
+/* extractmin extracts the minimum element from a minimum priority queue
+ * based on a key value.
  */
-procedure makeedgelist(int G[], int edgelist[], int s)
-    local int i = 0, int j = 0
-    
-    from i = 0 do
-        from j = 0 do
-            if G[i][j] != 0 then
-                edgelist[0][s] += G[i][j]
-                edgelist[1][s] += i+1
-                edgelist[2][s] += j+1
-                s += 1
-            fi G[i][j] != 0
-            j += 1
-        until j = size(G)
-        j -= size(G)
-        i += 1
-    until i = size(G)
-    
-    delocal int i = size(G), int j = 0
+procedure extractmin(int queue[], int ptr, int min[])
+    min <=> queue[ptr]
 
-procedure shortenlist(int list[], int reslist[], int s)
+/* swapin swaps an element in a priority queue into its correct spot.
+ * All elements except the swapped-in element must be in correct order.
+ */
+procedure swapin(int queue[], int nodes[], int ptr, int elem)
+    if nodes[queue[ptr]][1] >= nodes[queue[elem]][1] then
+        queue[ptr] <=> queue[elem]
+    else
+        local int newptr = ptr + 1
+        call swapin(queue, nodes, newptr, elem)
+        delocal int newptr = ptr + 1
+    fi nodes[queue[elem]][1] >= nodes[queue[ptr]][1]
+    
+/* MSTPrim creates a minimum spanning tree from a graph.
+ * Uses a modified adjacency list with an added key to represent the graph.
+ */
+procedure MSTPrim(int G[], int nodes[], int r, int queue[])
     local int i = 0
+    local int queuepointer = 0
+    
+    // Set all node keys to infinity, and parents to nil.
     from i = 0 do
-        reslist[0][i] += list[0][i]
-        reslist[1][i] += list[1][i]
-        reslist[2][i] += list[2][i]
-        reslist[3][i] += 4294967295
-        reslist[4][i] -= 1
+        nodes[i][1] += 4294967295
+        nodes[i][2] -= 1
         i += 1
-    until i = s
-    delocal int i = s
-
-/* Res must be infinity (4294967295) */ 
-procedure extractmin(int list[], int i, int cur, int res)
-    if i < size(list) then
-        if res > list[i] then
-            
-        else
-            
-        fi res > list[i]
-    fi i < size(list)
-
-procedure MSTPrim(int G[], int A[], int r)
-    local int edgelist[5][size(G) * size(G)] = {{0}, {0}, {0}}
-    local int s = 0
-    call makeedgelist(G, edgelist, s)
-    // Shorten the edgelist to only contain the actual amount of edges.
-    local int edges[5][s] = {{0}}
-    call shortenlist(edgelist, edges, s)
+    until i = size(nodes)
+    i -= size(nodes)
+    nodes[r][1] -= 4294967295 // Set root key to 0
     
-    // Convert and create adjacency+ list instead of edgelist?
-    // Will probably(?) work better
+    // Create min-queue of nodes, with r as the first node
+    from i = 0 do
+        queue[i] += i
+        i += 1
+    until i = size(nodes)
+    i -= size(nodes)
+    call swapin(queue, nodes, queuepointer, r)
     
-    edges[3][r] -= 4294967295
+    from queuepointer = 0 do
+        queuepointer += 1
+    until queuepointer = size(G)
     
-    // Sort edges and put in a min-priority queue (FIFO)
-    
-    local int i = 0
-    from headcounter = 0 do
-        u += queue[1][headcounter]
-        local int j = 0
-        from j = 0 do
-            if G[u][i] != 0
-                if edges[?][?] \exi Q && w(u, v) < v.key
-                    edges[3][?] = u
-                    edges[4][?] = w(u, v)
-                    
-            fi G[u][i] != 0
-        until j = size(G)
-    until headcounter = tailpointer
-    delocal int i = size(G) * size(G)
-    
-    uncall shortenlist(edgelist, edges, s)
-    delocal int edges[5][s] = {{0}}
-    uncall makeedgelist(G, edgelist, s)
-    delocal int s = 0
-    delocal int edgelist[5][size(G) * size(G)] = {{0}, {0}, {0}}
+    delocal int queuepointer = size(G)
+    delocal int i = 0
 
 procedure main()
-    int G[][] = {{0, 2, 0, 5, 0},
-               {2, 0, 0, 0, 4},
-               {0, 0, 0, 4, 0},
-               {5, 0, 4, 0, 7},
-               {0, 4, 0, 7, 0}}
-    int A[5][5] = {{0}, {0}, {0}, {0}, {0}}
-    int r = 0
-    call MSTPrim(G, A, r)
+    // Graph with 5 nodes represented as an adjacency list
+    int G[10][2] = {{2, 2}, {4, 5},
+                   {1, 2}, {5, 4},
+                   {4, 4},
+                   {1, 5}, {3, 4}, {5, 7},
+                   {2, 4}, {4, 7}}
+    int nodes[5][3] = {{0, 0, 0},
+                       {2, 0, 0},
+                       {4, 0, 0},
+                       {5, 0, 0},
+                       {8, 0, 0}}
+    int r = 3 // Root of tree
+    int queue[size(nodes)] = {0}
+    
+    int A[5][5] = {{0}, {0}, {0}, {0}, {0}} // MST as adjacency matrix
+    
+    call MSTPrim(G, nodes, r, queue)

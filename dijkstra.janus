@@ -1,25 +1,166 @@
 /*
- * Dijkstra's Algorithm (outline)
- * Implement with a weighted adjacency list (modified to handle relax)?
- * Should be manageable.
+ * Dijkstra's Algorithm
+ * Implement with a weighted adjacency graph with extra node information
  */
 
-dijkstra(int G[], int Gadj[], int s) // G as a weighted adjacency list
-    local int nodes[2][size(Gadj] = {{0}}
-    local int i
-    // Initialize nodes[0][i] to infinity and nodes[1][i] to NULL 
-    nodes[0][s] = 0
-    delocal int i = size(Gadj)
+/******* Heaps data structure *******/
+procedure extractmin(int A[], int heapsize, int min,
+                     int heapgarbage[], int garbagecounter)
+    if heapsize < 1 then
+        error("Heap underflow")
+    fi heapsize < 1
     
-    // Ordered min FIFO queue with edges
-    // Adjacency list with weight information - store in G (edge info) rather
-    // than Gadj (Node info)
+    min += A[1]
+    A[1] -= min
+    A[1] += 4294967295
     
+    A[1] <=> A[heapsize]
+    heapsize -= 1
+    call minheapify(A, heapsize, 1, heapgarbage, garbagecounter)
+    garbagecounter += 1
+
+procedure minheapify(int A[], int heapsize, int i,
+                     int heapgarbage[], int garbagecounter)
+    local int left = 0, int right = 0, int min = 0
+    call left(i, left)
+    call right(i, right)
+    
+    if i != 1 then
+        local int parent = 0
+        call parent(i, parent)
+        heapgarbage[garbagecounter] -= A[i]
+        uncall parent(i, parent)
+        delocal int parent = 0
+    fi i != 1
+    
+    if left <= heapsize && A[left] < A[i] then
+        min += left
+        if right <= heapsize && A[right] < A[min] then
+            min -= left
+            min += right
+        fi right <= heapsize && A[right] < A[left]
+    else
+        min += i
+        if right <= heapsize && A[right] < A[min] then
+            min -= i
+            min += right
+        fi right <= heapsize && A[right] < A[i]
+    fi left <= heapsize && A[left] < A[i]
+    
+    heapgarbage[garbagecounter] += A[i]
+    
+    if min != i then
+        A[i] <=> A[min]
+        call minheapify(A, heapsize, min, heapgarbage, garbagecounter)
+        
+        if A[left] = heapgarbage[garbagecounter] then
+            min -= left
+        else
+            min -= right
+        fi A[left] = heapgarbage[garbagecounter]
+    fi min = 0
+    
+    if A[i] = heapgarbage[garbagecounter] then
+        min -= i
+    fi A[i] = heapgarbage[garbagecounter]
+    
+    uncall right(i, right)
+    uncall left(i, left)
+    delocal int left = 0, int right = 0, int min = 0
+
+procedure parent(int i, int parent)
+    parent += i / 2
+
+procedure left(int i, int left)
+    left += 2 * i
+
+procedure right(int i, int right)
+    right += 2 * i + 1
+
+/******** End heap data structure *******/
+ 
+/*
+ * extractedges extract the edge information (starting node, ending node,
+ * weight) of a graph G and returns it in a list.
+ *
+ * Parameters:
+ * int array[]      An adjacency matrix.
+ * int edgelist[]   An empty array of size |E|
+ *
+ * Returns:
+ * A list of all edges in G.
+ */
+procedure extractedges(int G[], int edgelist[])
+    local int i = 0, int j = 0, int s = 0
+    
+    from i = 0 do
+        from j = 0 do
+            if G[i][j] != 0 then
+                edgelist[0][s] += G[i][j]
+                edgelist[1][s] += i+1
+                edgelist[2][s] += j+1
+                s += 1
+            fi G[i][j] != 0
+            j += 1
+        until j = size(G)
+        i += 1
+    until i = size(G)
+    
+    delocal int i = size(G), int j = size(G), int s = size(G)
+
+/* initialize initiates the tree's nodes to have no parent and their
+ * shortest-path estimates to infinity (4294967295). It then sets the source
+ * nodes path estimate to be 0.
+ */
+procedure initialize(int nodes[], int s)
     local int i = 0
-    from headcounter = 0 do
-        u = queue[1][headcounter]
-        headcounter += 1
-        // S unified with u
-        // Relax edges
-    until headcounter = tailpointer
-    delocal int i = size(G) * size(G)
+    from i = 0 do
+        nodes[i][0] += 4294967295
+        nodes[i][1] += -1
+        i += 1
+    until i = size(nodes)
+    nodes[s][0] -= 4294967295
+    delocal int i = size(nodes)
+
+/* relax relaxes an edge between the nodes u and v. */
+procedure relax(int u, int v, int nodes[], int G[], int garbage[], int garbageptr)
+    if nodes[v][1] > nodes[u][1] + G[v][u] then
+        garbage[garbageptr] += nodes[v][0]
+        garbageptr += 1
+        nodes[v][0] += nodes[u][0] + G[v][u] - garbage[garbageptr-1]
+        nodes[v][1] += u + 1
+    fi nodes[v][1] = u
+
+procedure dijkstra(int G[], int nodes[], int s, int queue[])
+    local int set[size(nodes)][size(nodes)] = {{0}}, int heapsize = size(queue)
+    call initialize(nodes, s)
+    call initialize(queue, s)
+    
+    // call minheapify on
+    
+    from heapsize = size(queue) do
+        // call extractmin
+        
+    until heapsize = 0
+    
+    delocal int set[nodes] = {0}, int heapsize = 0
+
+procedure main()
+    // Graph with 5 nodes represented as an adjacency list
+    int G[10][2] = {{2, 2}, {4, 5},
+                   {1, 2}, {5, 4},
+                   {4, 4},
+                   {1, 5}, {3, 4}, {5, 7},
+                   {2, 4}, {4, 7}}
+    int nodes[5][3] = {{0, 0, 0},
+                       {2, 0, 0},
+                       {4, 0, 0},
+                       {5, 0, 0},
+                       {8, 0, 0}}
+    int queue[2][size(G) = {{0}, {0}}
+    
+    int garbage[size(G)] = {0}
+    int garbageptr = 0
+    
+    call dijkstra(G, nodes, 0, queue)
+    

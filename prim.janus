@@ -46,31 +46,88 @@ procedure getlist(int adjacent[], int ptrs[], int i, int res[])
     delocal int end = 0
 
  /******** ADJACENCY LIST FUNCTIONS END ********/
+ 
+/******* Heaps data structure *******/
+procedure extractmin(int A[], int heapsize, int min,
+                     int heapgarbage[], int garbagecounter)
+    if heapsize < 1 then
+        error("Heap underflow")
+    fi heapsize < 1
+    
+    min += A[1]
+    A[1] -= min
+    A[1] += 4294967295
+    
+    A[1] <=> A[heapsize]
+    heapsize -= 1
+    call minheapify(A, heapsize, 1, heapgarbage, garbagecounter)
+    garbagecounter += 1
 
-/* extractmin extracts the minimum element from a minimum priority queue
- * based on a key value.
- */
-procedure extractmin(int queue[], int ptr, int min[])
-    min <=> queue[ptr]
-
-/* swapin swaps an element in a priority queue into its correct spot.
- * All elements except the swapped-in element must be in correct order.
- */
-procedure swapin(int queue[], int nodes[], int ptr, int elem)
-    if nodes[queue[ptr]][1] >= nodes[queue[elem]][1] then
-        queue[ptr] <=> queue[elem]
+procedure minheapify(int A[], int heapsize, int i,
+                     int heapgarbage[], int garbagecounter)
+    local int left = 0, int right = 0, int min = 0
+    call left(i, left)
+    call right(i, right)
+    
+    if i != 1 then
+        local int parent = 0
+        call parent(i, parent)
+        heapgarbage[garbagecounter] -= A[i]
+        uncall parent(i, parent)
+        delocal int parent = 0
+    fi i != 1
+    
+    if left <= heapsize && A[left] < A[i] then
+        min += left
+        if right <= heapsize && A[right] < A[min] then
+            min -= left
+            min += right
+        fi right <= heapsize && A[right] < A[left]
     else
-        local int newptr = ptr + 1
-        call swapin(queue, nodes, newptr, elem)
-        delocal int newptr = ptr + 1
-    fi nodes[queue[elem]][1] >= nodes[queue[ptr]][1]
+        min += i
+        if right <= heapsize && A[right] < A[min] then
+            min -= i
+            min += right
+        fi right <= heapsize && A[right] < A[i]
+    fi left <= heapsize && A[left] < A[i]
+    
+    heapgarbage[garbagecounter] += A[i]
+    
+    if min != i then
+        A[i] <=> A[min]
+        call minheapify(A, heapsize, min, heapgarbage, garbagecounter)
+        
+        if A[left] = heapgarbage[garbagecounter] then
+            min -= left
+        else
+            min -= right
+        fi A[left] = heapgarbage[garbagecounter]
+    fi min = 0
+    
+    if A[i] = heapgarbage[garbagecounter] then
+        min -= i
+    fi A[i] = heapgarbage[garbagecounter]
+    
+    uncall right(i, right)
+    uncall left(i, left)
+    delocal int left = 0, int right = 0, int min = 0
+
+procedure parent(int i, int parent)
+    parent += i / 2
+
+procedure left(int i, int left)
+    left += 2 * i
+
+procedure right(int i, int right)
+    right += 2 * i + 1
+
+/******** End heap data structure *******/
     
 /* MSTPrim creates a minimum spanning tree from a graph.
  * Uses a modified adjacency list with an added key to represent the graph.
  */
-procedure MSTPrim(int G[], int nodes[], int r, int queue[])
-    local int i = 0
-    local int queuepointer = 0
+procedure MSTPrim(int G[], int nodes[], int r, int queue[], int heapgarbage[])
+    local int i = 0, int queuepointer = 0, int heapsize = size(queue)
     
     // Set all node keys to infinity, and parents to nil.
     from i = 0 do
@@ -78,31 +135,37 @@ procedure MSTPrim(int G[], int nodes[], int r, int queue[])
         nodes[i][2] -= 1
         i += 1
     until i = size(nodes)
-    i -= size(nodes)
+    i -= size(nodes) - 1
     nodes[r][1] -= 4294967295 // Set root key to 0
     
     // Create min-queue of nodes, with r as the first node
-    from i = 0 do
-        queue[i] += i
+    queue[0] += r
+    local int n = 1
+    from i = 1 do
+        if i = r then
+            n += 1
+        fi i = r
+        queue[i] += n
+        n += 1
         i += 1
     until i = size(nodes)
+    delocal int n = size(queue) + 1
     i -= size(nodes)
-    call swapin(queue, nodes, queuepointer, r)
     
     from queuepointer = 0 do
+        
         queuepointer += 1
     until queuepointer = size(G)
     
-    delocal int queuepointer = size(G)
-    delocal int i = 0
+    delocal int i = 0, int queuepointer = size(G), int heapsize = 0
 
 procedure main()
     // Graph with 5 nodes represented as an adjacency list
     int G[10][2] = {{2, 2}, {4, 5},
-                   {1, 2}, {5, 4},
-                   {4, 4},
-                   {1, 5}, {3, 4}, {5, 7},
-                   {2, 4}, {4, 7}}
+                    {1, 2}, {5, 4},
+                    {4, 4},
+                    {1, 5}, {3, 4}, {5, 7},
+                    {2, 4}, {4, 7}}
     int nodes[5][3] = {{0, 0, 0},
                        {2, 0, 0},
                        {4, 0, 0},
@@ -110,7 +173,8 @@ procedure main()
                        {8, 0, 0}}
     int r = 3 // Root of tree
     int queue[size(nodes)] = {0}
+    int heapgarbage[size(nodes)] = {0}
     
     int A[5][5] = {{0}, {0}, {0}, {0}, {0}} // MST as adjacency matrix
     
-    call MSTPrim(G, nodes, r, queue)
+    call MSTPrim(G, nodes, r, queue, heapgarbage)

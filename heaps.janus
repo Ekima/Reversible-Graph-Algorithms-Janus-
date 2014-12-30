@@ -2,7 +2,6 @@
 
 procedure insert(int A[], int heapsize, int key, int garbage[], int garbagecounter)
     heapsize += 1
-    show(heapsize)
     call decreasekey(A, heapsize, key, garbage, garbagecounter)
 
 procedure decreasekey(int A[], int i, int key,
@@ -40,7 +39,7 @@ procedure minimum(int A[], int min)
     min += A[1]
 
 procedure extractmin(int A[], int heapsize, int min,
-                     int heapgarbage[], int garbagecounter)
+                     int heapgarbage[])
     if heapsize < 1 then
         error("Heap underflow")
     fi heapsize < 1
@@ -51,8 +50,9 @@ procedure extractmin(int A[], int heapsize, int min,
     
     A[1] <=> A[heapsize]
     heapsize -= 1
+    local int garbagecounter = 0
     call minheapify(A, heapsize, 1, heapgarbage, garbagecounter)
-    garbagecounter += 1
+    delocal int garbagecounter = 0
 
 procedure minheapify(int A[], int heapsize, int i,
                      int heapgarbage[], int garbagecounter)
@@ -111,19 +111,12 @@ procedure main()
     int A[] = {0, 1, 2, 3, 7, 4, 8, 9}
     
     int heapsize = size(A)-1
-    int i = 2
     int heapgarbage[(heapsize+1)/2]
-    int garbagecounter = 0
     int heapgarbage1[heapsize/2]
-    int garbagecounter1 = 0
     int heapgarbage2[(heapsize-1)/2]
-    int garbagecounter2 = 0
     int heapgarbage3[(heapsize-2)/2]
-    int garbagecounter3 = 0
     int heapgarbage4[(heapsize-3)/2]
-    int garbagecounter4 = 0
     int heapgarbage5[(heapsize-4)/2]
-    int garbagecounter5 = 0
     
     int min1 = 0
     int min2 = 0
@@ -131,11 +124,6 @@ procedure main()
     int min4 = 0
     int min5 = 0
     int min6 = 0
-    
-    int decreasegarbage[(heapsize+1)/2]
-    int decreasecounter = 0
-    int decreasei = 7
-    int keygarbage = 0
     
     int insertgarbage[(heapsize+1)/2]
     int insertcounter = 0
@@ -148,14 +136,12 @@ procedure main()
     int insertgarbage4[(heapsize+1)/2]
     int insertcounter4 = 0
     
-    call decreasekey(A, decreasei, 0, decreasegarbage, decreasecounter)
-    
-    call extractmin(A, heapsize, min1, heapgarbage, garbagecounter)
-    call extractmin(A, heapsize, min2, heapgarbage1, garbagecounter1)
-    call extractmin(A, heapsize, min3, heapgarbage2, garbagecounter2)
-    call extractmin(A, heapsize, min4, heapgarbage3, garbagecounter3)
-    call extractmin(A, heapsize, min5, heapgarbage4, garbagecounter4)
-    call extractmin(A, heapsize, min6, heapgarbage5, garbagecounter5)
+    call extractmin(A, heapsize, min1, heapgarbage)
+    call extractmin(A, heapsize, min2, heapgarbage1)
+    call extractmin(A, heapsize, min3, heapgarbage2)
+    call extractmin(A, heapsize, min4, heapgarbage3)
+    call extractmin(A, heapsize, min5, heapgarbage4)
+    call extractmin(A, heapsize, min6, heapgarbage5)
     
     call insert(A, heapsize, min3, insertgarbage, insertcounter)
     call insert(A, heapsize, min2, insertgarbage1, insertcounter1)

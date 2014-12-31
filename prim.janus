@@ -152,38 +152,31 @@ procedure right(int i, int right)
     right += 2 * i + 1
 
 /******** End heap data structure *******/
+
+procedure initialize(int nodes[], int queue[], int s)
+    local int i = 2, int n = 1
+    queue[1][0] += s
+    nodes[s][1] -= 1
+    from i = 2 do
+        if i = s + 1 then
+            n += 1
+        fi i = s + 1
+        queue[i][0] += n
+        queue[i][1] += 4294967295
+        nodes[i-1][1] -= 1
+        n += 1
+        i += 1
+    until i = size(nodes) + 1
+    delocal int i = size(nodes) + 1, int n = size(nodes) + 1
     
 /* MSTPrim creates a minimum spanning tree from a graph.
  * Uses a modified adjacency list with an added key to represent the graph.
  */
 procedure MSTPrim(int G[], int nodes[], int r, int queue[],
                   int extractgarbage[], int decreasegarbage[],
-                  int count[], int dcnt,
-                  int parents[], int pcount,
-                  int adjacentgarbage[], int adjcount)
+                  int decreasecounters[], int count, int adjacentgarbage[])
     local int i = 0, int queuesize = size(queue)-1, int extractcount = 0
-    
-    // Set all nodes' parents to nil.
-    from i = 0 do
-        nodes[i][1] -= 1
-        i += 1
-    until i = size(nodes)
-    i -= size(nodes) - 2
-    
-    // Create min-queue of nodes, with r as the first node
-    queue[1][0] += r
-    local int n = 1
-    from i = 2 do
-        if i = r + 1 then
-            n += 1
-        fi i = r + 1
-        queue[i][0] += n
-        queue[i][1] += 4294967295
-        n += 1
-        i += 1
-    until i = size(nodes) + 1
-    delocal int n = size(queue)
-    i -= size(nodes) + 1
+    call initialize(nodes, queue, r)
     
     from queuesize = size(queue)-1 do
         local int u = 0
@@ -206,21 +199,19 @@ procedure MSTPrim(int G[], int nodes[], int r, int queue[],
                 from k = 1 do
                     if queue[k][0] = adjlist[j] then
                         inqueue += 1
-                        adjacentgarbage[adjcount] += k
-                        adjcount += 1
+                        adjacentgarbage[count][0] += k
+                        count += 1
                     fi queue[k][0] = adjlist[j]
                     k += 1
             until k = queuesize + 1
             fi queuesize != 0
             if inqueue = 1 &&
                G[nodes[u-1][0] + j][1] < queue[k-1][1] then
-                parents[pcount] <=> nodes[adjlist[j]-1][1]
-                pcount += 1
+                adjacentgarbage[count][1] <=> nodes[adjlist[j]-1][1]
                 nodes[adjlist[j]-1][1] += u
-                call decreasekey(queue, adjacentgarbage[adjcount-1],
+                call decreasekey(queue, adjacentgarbage[count-1][0],
                                  G[nodes[u-1][0] + j][1],
-                                 decreasegarbage, count, dcnt)
-                dcnt += 1
+                                 decreasegarbage, decreasecounters, count-1)
             fi inqueue = 1 && nodes[adjlist[j]-1][1] = u
             j += 1
             
@@ -265,14 +256,11 @@ procedure main()
     int r = 3 // Root of tree
     int queuegarbage[size(nodes)+1][2]
     int extractgarbage[size(nodes)][(size(nodes)+1)/2]
-    int decreasegarbage[(size(nodes)-1)*(size(nodes)-1)][(size(nodes)+3)/2]
-    int decreasecounters[(size(nodes)-1)*(size(nodes)-1)]
-    int dcount
-    int parents[(size(nodes)-1)*size(nodes)]
-    int pcount
-    int adjacentgarbage[(size(nodes)-1)*size(nodes)]
-    int adjcount
+    int decreasegarbage[size(nodes)][(size(nodes)+3)/2]
+    int decreasecounters[size(nodes)]
+    int count
+    int adjacentgarbage[(size(nodes)-1)*size(nodes)][2]
     
     call MSTPrim(G, nodes, r, queuegarbage, extractgarbage,
-                 decreasegarbage, decreasecounters, dcount, parents, pcount,
-                 adjacentgarbage, adjcount)
+                 decreasegarbage, decreasecounters, count,
+                 adjacentgarbage)

@@ -99,10 +99,12 @@ procedure extractmin(int A[], int heapsize, int min,
 
 procedure minheapify(int A[], int heapsize, int i,
                      int heapgarbage[], int garbagecounter, int garbagei)
+                     show(A)
     local int left = 0, int right = 0, int min = 0
     call left(i, left)
     call right(i, right)
     
+    local int x =  A[left][1] show(x) delocal int x =  A[left][1]
     if left <= heapsize && A[left][1] < A[i][1] then
         min += left
         if right <= heapsize && A[right][1] < A[min][1] then
@@ -156,7 +158,7 @@ procedure right(int i, int right)
 procedure initialize(int nodes[], int queue[], int s)
     local int i = 2, int n = 1
     queue[1][0] += s
-    nodes[s][1] -= 1
+    nodes[0][1] -= 1
     from i = 2 do
         if i = s + 1 then
             n += 1
@@ -168,6 +170,27 @@ procedure initialize(int nodes[], int queue[], int s)
         i += 1
     until i = size(nodes) + 1
     delocal int i = size(nodes) + 1, int n = size(nodes) + 1
+
+procedure getadjsize(int u, int nodes[], int G[], int return)
+    if u < size(nodes) then
+        return += nodes[u][0]-nodes[u-1][0]
+    else
+        return += size(G)-nodes[u-1][0]
+    fi u < size(nodes)
+
+procedure isinqueue(int inqueue, int k, int queuesize, int queue[], int j,
+                    int adjlist[], int adjacentgarbage[], int count)
+    if queuesize != 0 then
+        k += 1
+        from k = 1 do
+            if queue[k][0] = adjlist[j] then
+                inqueue += 1
+                adjacentgarbage[count][0] += k
+                count += 1
+            fi queue[k][0] = adjlist[j]
+            k += 1
+        until k = queuesize + 1
+    fi queuesize != 0
     
 /* MSTPrim creates a minimum spanning tree from a graph.
  * Uses a modified adjacency list with an added key to represent the graph.
@@ -179,32 +202,18 @@ procedure MSTPrim(int G[], int nodes[], int r, int queue[],
     call initialize(nodes, queue, r)
     
     from queuesize = size(queue)-1 do
-        local int u = 0
+        local int u = 0, int adjsize = 0
         call extractmin(queue, queuesize, u, extractgarbage, extractcount)
         
-        local int x = 0
-        if u < size(nodes) then
-            x += nodes[u][0]-nodes[u-1][0]
-        else
-            x += size(G)-nodes[u-1][0]
-        fi u < size(nodes)
-        local int adjlist[x] = {0}
+        call getadjsize(u, nodes, G, adjsize)
+        local int adjlist[adjsize] = {0}
         call getlist(G, nodes, u-1, adjlist)
         local int j = 0
         
         from j = 0 do
-            local int k = 0, int inqueue = 0, int l = 0
-            if queuesize != 0 then
-                k += 1
-                from k = 1 do
-                    if queue[k][0] = adjlist[j] then
-                        inqueue += 1
-                        adjacentgarbage[count][0] += k
-                        count += 1
-                    fi queue[k][0] = adjlist[j]
-                    k += 1
-            until k = queuesize + 1
-            fi queuesize != 0
+            local int k = 0, int inqueue = 0
+            call isinqueue(inqueue, k, queuesize, queue, j,
+                           adjlist, adjacentgarbage, count)
             if inqueue = 1 &&
                G[nodes[u-1][0] + j][1] < queue[k-1][1] then
                 adjacentgarbage[count][1] <=> nodes[adjlist[j]-1][1]
@@ -223,20 +232,14 @@ procedure MSTPrim(int G[], int nodes[], int r, int queue[],
                     fi queue[k][0] = adjlist[j-1] && inqueue = 0 && k != 0
                 until k = 0
             fi queuesize != 0
-            delocal int k = 0, int inqueue = 0, int l = 0
+            delocal int k = 0, int inqueue = 0
         until j = size(adjlist)
-        
         delocal int j = size(adjlist)
-        uncall getlist(G, nodes, u-1, adjlist)
-        delocal int adjlist[x] = {0}
-        if u < size(nodes) then
-            x -= nodes[u][0]-nodes[u-1][0]
-        else
-            x -= size(G)-nodes[u-1][0]
-        fi u < size(nodes)
-        delocal int x = 0
         
-        delocal int u = queue[queuesize+1][0]
+        uncall getlist(G, nodes, u-1, adjlist)
+        delocal int adjlist[adjsize] = {0}
+        uncall getadjsize(u, nodes, G, adjsize)
+        delocal int u = queue[queuesize+1][0], int adjsize = 0
     until queuesize = 0
     
     delocal int i = 0, int queuesize = 0, int extractcount = size(nodes)
@@ -259,7 +262,7 @@ procedure main()
     int decreasegarbage[size(nodes)][(size(nodes)+3)/2]
     int decreasecounters[size(nodes)]
     int count
-    int adjacentgarbage[(size(nodes)-1)*size(nodes)][2]
+    int adjacentgarbage[size(G)][2]
     
     call MSTPrim(G, nodes, r, queuegarbage, extractgarbage,
                  decreasegarbage, decreasecounters, count,

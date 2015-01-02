@@ -4,65 +4,90 @@
  */
 
 /******* Heaps data structure *******/
-procedure extractmin(int A[], int heapsize, int min,
-                     int heapgarbage[], int garbagecounter)
+procedure decreasekey(int A[], int i, int key,
+                      int garbage[], int garbagecounters[], int dcnt,
+                      int nodes[])
+    local int tmp = i
+    if key > nodes[A[i]-1][2] then
+        error("New key is bigger than current key")
+    fi key > nodes[A[i]-1][2]
+    garbage[dcnt][0] += nodes[A[i]-1][2] - key
+    nodes[A[i]-1][2] -= garbage[dcnt][0]
+    
+    local int loopcond = 1
+    from loopcond = 1 && garbagecounters[dcnt] = 0 do
+        garbagecounters[dcnt] += 1
+        local int parent = 0
+        call parent(tmp, parent)
+        garbage[dcnt][garbagecounters[dcnt]] += tmp
+        if tmp <= 1 || nodes[A[parent]-1][2] <= nodes[A[tmp]-1][2] then
+            loopcond -= 1
+        else
+            A[tmp] <=> A[parent]
+            tmp -= garbage[dcnt][garbagecounters[dcnt]]
+            tmp += parent
+        fi loopcond = 0
+        uncall parent(garbage[dcnt][garbagecounters[dcnt]], parent)
+        delocal int parent = 0
+    until loopcond = 0
+    delocal int loopcond = 0
+    delocal int tmp = garbage[dcnt][garbagecounters[dcnt]]
+    
+procedure extractmin(int A[], int heapsize, int min, int nodes[],
+                     int heapgarbage[], int garbagei)
     if heapsize < 1 then
         error("Heap underflow")
     fi heapsize < 1
     
     min += A[1]
-    A[1] -= min
-    A[1] += 4294967295
-    
     A[1] <=> A[heapsize]
     heapsize -= 1
-    call minheapify(A, heapsize, 1, heapgarbage, garbagecounter)
-    garbagecounter += 1
+    local int garbagecounter = 0
+    call minheapify(A, heapsize, 1, nodes,
+                    heapgarbage, garbagecounter, garbagei)
+    delocal int garbagecounter = 0
+    garbagei += 1
 
-procedure minheapify(int A[], int heapsize, int i,
-                     int heapgarbage[], int garbagecounter)
+procedure minheapify(int A[], int heapsize, int i, int nodes[],
+                     int heapgarbage[], int garbagecounter, int garbagei)
     local int left = 0, int right = 0, int min = 0
     call left(i, left)
     call right(i, right)
     
-    if i != 1 then
-        local int parent = 0
-        call parent(i, parent)
-        heapgarbage[garbagecounter] -= A[i]
-        uncall parent(i, parent)
-        delocal int parent = 0
-    fi i != 1
-    
-    if left <= heapsize && A[left] < A[i] then
+    if left <= heapsize && nodes[A[left]-1][2] < nodes[A[i]-1][2] then
         min += left
-        if right <= heapsize && A[right] < A[min] then
+        if right <= heapsize && nodes[A[right]-1][2] < nodes[A[min]-1][2] then
             min -= left
             min += right
-        fi right <= heapsize && A[right] < A[left]
+        fi right <= heapsize && nodes[A[right]-1][2] < nodes[A[left]-1][2]
     else
         min += i
-        if right <= heapsize && A[right] < A[min] then
+        if right <= heapsize && nodes[A[right]-1][2] < nodes[A[min]-1][2] then
             min -= i
             min += right
-        fi right <= heapsize && A[right] < A[i]
-    fi left <= heapsize && A[left] < A[i]
+        fi right <= heapsize && nodes[A[right]-1][2] < nodes[A[i]-1][2]
+    fi left <= heapsize && nodes[A[left]-1][2] < nodes[A[i]-1][2]
     
-    heapgarbage[garbagecounter] += A[i]
+    heapgarbage[garbagei][garbagecounter] += min
+    garbagecounter += 1
     
     if min != i then
         A[i] <=> A[min]
-        call minheapify(A, heapsize, min, heapgarbage, garbagecounter)
+        call minheapify(A, heapsize, min, nodes,
+                        heapgarbage, garbagecounter, garbagei)
         
-        if A[left] = heapgarbage[garbagecounter] then
+        if left = heapgarbage[garbagei][garbagecounter-1] then
             min -= left
         else
             min -= right
-        fi A[left] = heapgarbage[garbagecounter]
+        fi left = heapgarbage[garbagei][garbagecounter-1]
     fi min = 0
     
-    if A[i] = heapgarbage[garbagecounter] then
+    garbagecounter -= 1
+    
+    if i = heapgarbage[garbagei][garbagecounter] then
         min -= i
-    fi A[i] = heapgarbage[garbagecounter]
+    fi i = heapgarbage[garbagei][garbagecounter]
     
     uncall right(i, right)
     uncall left(i, left)
@@ -79,88 +104,160 @@ procedure right(int i, int right)
 
 /******** End heap data structure *******/
  
-/*
- * extractedges extract the edge information (starting node, ending node,
- * weight) of a graph G and returns it in a list.
- *
- * Parameters:
- * int array[]      An adjacency matrix.
- * int edgelist[]   An empty array of size |E|
- *
- * Returns:
- * A list of all edges in G.
- */
-procedure extractedges(int G[], int edgelist[])
-    local int i = 0, int j = 0, int s = 0
+ /******* ADJACENCY LIST FUNCTIONS START *******/
+ 
+ /*
+  * getlist gets the contents of a single list in the adjacency list.
+  *
+  * Parameters:
+  * int adjacent[]  A list of adjacency list elements
+  * int ptrs[]      A list of pointers to the start of each individual list
+  * int i           The list that should get extracted (numbered)
+  * int res[]       A list to store the returned elements in
+  * 
+  * Returns:
+  * A copy of a the items in a list in the adjacency list.
+  */
+procedure getlist(int adjacent[], int ptrs[], int i, int res[])
+    // end contains a pointer to the end of the wanted list
+    local int end = 0
+    if i = (size(ptrs) - 1) then
+        // If we try to get the last list we stop at the end of the element list
+        end += size(adjacent)
+    else
+        // Or else, we stop where the next list starts
+        end += ptrs[i + 1][0]
+    fi i = (size(ptrs) - 1)
     
-    from i = 0 do
-        from j = 0 do
-            if G[i][j] != 0 then
-                edgelist[0][s] += G[i][j]
-                edgelist[1][s] += i+1
-                edgelist[2][s] += j+1
-                s += 1
-            fi G[i][j] != 0
-            j += 1
-        until j = size(G)
-        i += 1
-    until i = size(G)
+    // All elements of the wanted list are loaded into res
+    local int r = ptrs[i][0]
+    from r = ptrs[i][0] do
+        res[r - ptrs[i][0]] += adjacent[r][0]
+        r += 1
+    until r = end
+    delocal int r = end
     
-    delocal int i = size(G), int j = size(G), int s = size(G)
+    // end is delocated
+    if i = (size(ptrs) - 1) then
+        end -= size(adjacent)
+    else
+        end -= ptrs[i + 1][0]
+    fi i = (size(ptrs) - 1)
+    delocal int end = 0
+
+ /******** ADJACENCY LIST FUNCTIONS END ********/
 
 /* initialize initiates the tree's nodes to have no parent and their
  * shortest-path estimates to infinity (4294967295). It then sets the source
  * nodes path estimate to be 0.
  */
-procedure initialize(int nodes[], int s)
-    local int i = 0
-    from i = 0 do
-        nodes[i][0] += 4294967295
-        nodes[i][1] += -1
+procedure initialize(int nodes[], int queue[], int s)
+    local int i = 2, int n = 1
+    nodes[s-1][1] -= 1
+    queue[1] += s
+    from i = 2 do
+        if i = s + 1 then
+            n += 1
+        fi i = s + 1
+        nodes[n-1][1] -= 1
+        nodes[n-1][2] += 4294967295
+        queue[i] += n
+        n += 1
         i += 1
-    until i = size(nodes)
-    nodes[s][0] -= 4294967295
-    delocal int i = size(nodes)
+    until i = size(nodes) + 1
+    delocal int i = size(nodes) + 1, int n = size(nodes) + 1
 
 /* relax relaxes an edge between the nodes u and v. */
-procedure relax(int u, int v, int nodes[], int G[], int garbage[], int garbageptr)
-    if nodes[v][1] > nodes[u][1] + G[v][u] then
-        garbage[garbageptr] += nodes[v][0]
-        garbageptr += 1
-        nodes[v][0] += nodes[u][0] + G[v][u] - garbage[garbageptr-1]
-        nodes[v][1] += u + 1
-    fi nodes[v][1] = u
+procedure relax(int u, int v, int nodes[], int weight,
+                int relaxgarbage[], int relaxcounters[],
+                int queue[], int queuesize,
+                int count, int adjacentgarbage[])
+    local int i = 0
+    from i = 0 do
+        if queue[i+1] = v then
+            adjacentgarbage[count][0] += i + 1
+            count += 1
+        fi queue[i+1] = v
+        i += 1
+    until i = queuesize
+    delocal int i = queuesize
+    if nodes[v-1][2] > nodes[u-1][2] + weight then
+        call decreasekey(queue, adjacentgarbage[count-1][0], nodes[u-1][2] + weight,
+                         relaxgarbage, relaxcounters, count-1, nodes)
+        nodes[v-1][1] <=> adjacentgarbage[count][1]
+        nodes[v-1][1] += u
+    fi nodes[v-1][2] = nodes[u-1][2] + weight
 
-procedure dijkstra(int G[], int nodes[], int s, int queue[])
-    local int set[size(nodes)][size(nodes)] = {{0}}, int heapsize = size(queue)
-    call initialize(nodes, s)
-    call initialize(queue, s)
+procedure getadjsize(int u, int nodes[], int G[], int return)
+    if u < size(nodes) then
+        return += nodes[u][0]-nodes[u-1][0]
+    else
+        return += size(G)-nodes[u-1][0]
+    fi u < size(nodes)
+
+procedure joinset(int set[], int u, int nodes[])
+    set[u-1][0] += nodes[u-1][0]
+    set[u-1][1] += nodes[u-1][1]
+    set[u-1][2] += nodes[u-1][2]
+
+procedure dijkstra(int G[], int nodes[], int s, int set[], int queue[],
+                   int relaxgarbage[], int relaxcounters[], int extractgarbage[],
+                   int count, int adjacentgarbage[])
+    local int queuesize = size(queue) - 1, int extractcounter = 0
+    call initialize(nodes, queue, s)
     
-    // call minheapify on
-    
-    from heapsize = size(queue) do
-        // call extractmin
+    from queuesize = size(queue)-1 do
+        local int u = 0, int adjsize = 0
+        call extractmin(queue, queuesize, u, nodes,
+                        extractgarbage, extractcounter)
+        call getadjsize(u, nodes, G, adjsize)
+        local int adjlist[adjsize] = {0}
+        call getlist(G, nodes, u-1, adjlist)
         
-    until heapsize = 0
+        call joinset(set, u, nodes)
+        local int i = 0
+        from i = 0 do
+            if queuesize != 0 then
+                local int weight = G[nodes[u-1][0]+i][1]
+                call relax(u, adjlist[i], nodes, weight,
+                           relaxgarbage, relaxcounters, queue, queuesize,
+                           count, adjacentgarbage)
+                delocal int weight = G[nodes[u-1][0]+i][1]
+            fi queuesize != 0
+            i += 1
+        until i = size(adjlist)
+        delocal int i = size(adjlist)
+        
+        uncall getlist(G, nodes, u-1, adjlist)
+        delocal int adjlist[adjsize] = {0}
+        uncall getadjsize(u, nodes, G, adjsize)
+        delocal int u = queue[queuesize+1], int adjsize = 0
+    until queuesize = 0
     
-    delocal int set[nodes] = {0}, int heapsize = 0
+    delocal int queuesize = 0, int extractcounter = size(nodes)
 
 procedure main()
     // Graph with 5 nodes represented as an adjacency list
     int G[10][2] = {{2, 2}, {4, 5},
-                   {1, 2}, {5, 4},
-                   {4, 4},
-                   {1, 5}, {3, 4}, {5, 7},
-                   {2, 4}, {4, 7}}
+                    {1, 2}, {5, 4},
+                    {4, 4},
+                    {1, 5}, {3, 4}, {5, 7},
+                    {2, 4}, {4, 7}}
     int nodes[5][3] = {{0, 0, 0},
                        {2, 0, 0},
                        {4, 0, 0},
                        {5, 0, 0},
                        {8, 0, 0}}
-    int queue[2][size(G) = {{0}, {0}}
+    int set[size(nodes)][3]
+    int queuegarbage[size(nodes)+1]
+    int relaxgarbage[size(nodes)][(size(nodes)+3)/2]
+    int relaxcounters[size(nodes)]
+    int extractgarbage[size(nodes)][(size(nodes)+1)/2]
+    int count
+    int adjacentgarbage[size(G)][2]
+    printf("")
     
-    int garbage[size(G)] = {0}
-    int garbageptr = 0
-    
-    call dijkstra(G, nodes, 0, queue)
+    call dijkstra(G, nodes, 3, set, queuegarbage,
+                  relaxgarbage, relaxcounters, extractgarbage,
+                  count, adjacentgarbage)
     

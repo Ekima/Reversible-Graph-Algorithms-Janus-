@@ -117,17 +117,6 @@ procedure extractedges(int G[], int edgelist[])
 /**** Begin disjoint set data structure ****/
 
 /*
- * Disjoint set data structure.
- * Has three functions: makeset, union and findset
- * Uses a linked list with a weighted-union heuristic, thus hopefully
- * maintaining O(m + nlgn) time, where m is a sequence of the three functions
- * and n is he amount of makeset operations.
- * The data structure is maintained by two two-dimensional array,
- * containing node information (next node, which set it belongs to), and set
- * information (head, tail and length).
- */
-
-/*
  * makeset creates a node for a single element and adds it to a new set.
  *
  * Parameters:
@@ -183,61 +172,51 @@ procedure union(int x, int y, int nodes[], int sets[],
     if sets[nodes[y][1]][2] = 0 || sets[nodes[x][1]][2] = 0 then
         error("Trying to perform union with an empty set")
     fi sets[nodes[y][1]][2] = 0 || sets[nodes[x][1]][2] = 0
-                
-    if sets[nodes[x][1]][2] >= sets[nodes[y][1]][2] && x != y then
-        splits[splitcounter][0] += sets[nodes[x][1]][1] // Tail of x-set
-        splits[splitcounter][1] += sets[nodes[y][1]][0] // Head of y-set
-        splits[splitcounter][2] += sets[nodes[y][1]][2] // Length of y-set
-        
-        // Set the tailnode of the x set to point to the headnode of the y set
-        nodes[x][0] += splits[splitcounter][1] + 1
-        
-        // Set the tail of the x set to the tail of the y set
-        sets[nodes[x][1]][1] -= splits[splitcounter][0]
-        local int ytail = sets[nodes[y][1]][1]
-        sets[nodes[x][1]][1] += ytail
-        delocal int ytail = sets[nodes[y][1]][1]
-        
-        // Set all values in the y-set to 0
-        sets[nodes[y][1]][0] -= splits[splitcounter][1]
-        sets[nodes[y][1]][1] -= sets[nodes[x][1]][1]
-        sets[nodes[y][1]][2] -= splits[splitcounter][2]
-        
-        call searchnodes(splits[splitcounter][1], nodes[x][1],
-                         splits[splitcounter][1], nodes, sets)
-        
-        // Add the length of y's set to the length of x's set
-        sets[nodes[x][1]][2] += splits[splitcounter][2]
+    
+    local int z = 0
+    if sets[nodes[x][1]][2] >= sets[nodes[y][1]][2] then
+        splits[splitcounter][3] += x
+        z += y
     else
-        splits[splitcounter][0] += sets[nodes[y][1]][1] // Tail of y-set
-        splits[splitcounter][1] += sets[nodes[x][1]][0] // Head of x-set
-        splits[splitcounter][2] += sets[nodes[x][1]][2] // Length of x-set
-        splits[splitcounter][3] += 1 // Entered second branch
-        
-        // Set the tailnode of the y set to point to the headnode of the x set
-        nodes[y][0] += splits[splitcounter][1] + 1
-        
-        // Set the tail of the y set to the tail of the x set
-        sets[nodes[y][1]][1] -= splits[splitcounter][0]
-        local int xtail = sets[nodes[x][1]][1]
-        sets[nodes[y][1]][1] += xtail
-        delocal int xtail = sets[nodes[x][1]][1]
-        
-        // Set all values in the x-set to 0
-        sets[nodes[x][1]][0] -= splits[splitcounter][1]
-        sets[nodes[x][1]][1] -= sets[nodes[y][1]][1]
-        sets[nodes[x][1]][2] -= splits[splitcounter][2]
-        
-        call searchnodes(splits[splitcounter][1], nodes[y][1],
-                         splits[splitcounter][1], nodes, sets)
-        
-        // Add the length of x's set to the length of y's set
-        sets[nodes[y][1]][2] += splits[splitcounter][2]
-    fi splits[splitcounter][3] = 0 && x != y
+        splits[splitcounter][3] += y
+        z += x
+    fi sets[nodes[x][1]][2] >= sets[nodes[y][1]][2]
+    
+    // Tail of first set
+    splits[splitcounter][0] += sets[nodes[splits[splitcounter][3]][1]][1]
+    splits[splitcounter][1] += sets[nodes[z][1]][0] // Head of second set
+    splits[splitcounter][2] += sets[nodes[z][1]][2] // Length of second set
+    
+    // Set the tail of the first set to point to the head of the second set
+    nodes[splits[splitcounter][3]][0] += splits[splitcounter][1] + 1
+    
+    // Set the tail of the first set to the tail of the second set
+    sets[nodes[splits[splitcounter][3]][1]][1] -= splits[splitcounter][0]
+    local int ytail = sets[nodes[z][1]][1]
+    sets[nodes[splits[splitcounter][3]][1]][1] += ytail
+    delocal int ytail = sets[nodes[z][1]][1]
+    
+    // Set all values in the second set to 0
+    sets[nodes[z][1]][0] -= splits[splitcounter][1]
+    sets[nodes[z][1]][1] -= sets[nodes[splits[splitcounter][3]][1]][1]
+    sets[nodes[z][1]][2] -= splits[splitcounter][2]
+    
+    call searchnodes(splits[splitcounter][1], nodes[splits[splitcounter][3]][1],
+                     splits[splitcounter][1], nodes, sets)
+    
+    // Add the length of the second set to the length of the first set
+    sets[nodes[splits[splitcounter][3]][1]][2] += splits[splitcounter][2]
+    
+    if splits[splitcounter][3] = x then
+        z -= y
+    else
+        z -= x
+    fi splits[splitcounter][3] = x
+    delocal int z = 0
     splitcounter += 1
     
 /*
- * findset checks if two nodes are in the same set.
+ * checksets checks if two nodes are in the same set.
  *
  * Parameters:
  * int x            First node
@@ -248,7 +227,7 @@ procedure union(int x, int y, int nodes[], int sets[],
  * Postcondition:
  * found = 1 if the nodes are in the same set, found = 0 if they are not
  */
-procedure findset(int x, int y, int nodes[], int found)
+procedure checksets(int x, int y, int nodes[], int found)
     if nodes[x][1] = nodes[y][1] then
         found += 1
     fi nodes[x][1] = nodes[y][1]
@@ -269,7 +248,7 @@ procedure findset(int x, int y, int nodes[], int found)
  */
 procedure mstkruskal(int G[], int edgecount, int A[],
                      int nodes[], int set[], int splitgarbage[])
-    // Initialize variables for loop, findset and split
+    // Initialize variables for loop, checksets and split
     local int i = 0, int found = 0, int splitcounter = 0,
           int sets[size(G)][3] = {{0}, {0}, {0}}
     
@@ -292,21 +271,19 @@ procedure mstkruskal(int G[], int edgecount, int A[],
     i -= edgecount
     
     from i = 0 do // Go through all edges
-        // Findset checks two nodes combined by an edge are in the same subset
-        show(edges)
-        call findset(edges[i][1]-1, edges[i][2]-1, nodes, found)
+        // checksets checks two nodes combined by an edge are in the same subset
+        call checksets(edges[i][1]-1, edges[i][2]-1, nodes, found)
         if found = 0 then
             // If they aren't, the two nodes are connected
-            uncall findset(edges[i][1]-1, edges[i][2]-1, nodes, found)
+            uncall checksets(edges[i][1]-1, edges[i][2]-1, nodes, found)
             A[edges[i][1]-1][edges[i][2]-1] += edges[i][0]
             A[edges[i][2]-1][edges[i][1]-1] += edges[i][0]
             local int x = edges[i][1]-1, int y = edges[i][2]-1
-            show(x) show(y)
             call union(x,y,
                        nodes, sets, splitgarbage, splitcounter)
             delocal int x = edges[i][1]-1, int y = edges[i][2]-1
         else
-            uncall findset(edges[i][1]-1, edges[i][2]-1, nodes, found)
+            uncall checksets(edges[i][1]-1, edges[i][2]-1, nodes, found)
         fi A[edges[i][1]-1][edges[i][2]-1] != 0
         i += 1
     until i = edgecount
@@ -330,14 +307,14 @@ procedure mstkruskal(int G[], int edgecount, int A[],
 
 procedure main()
     int G[][] = {{0, 2, 0, 5, 0},
-               {2, 0, 0, 0, 4},
-               {0, 0, 0, 4, 0},
-               {5, 0, 4, 0, 7},
-               {0, 4, 0, 7, 0}}
+                 {2, 0, 0, 0, 4},
+                 {0, 0, 0, 4, 0},
+                 {5, 0, 4, 0, 7},
+                 {0, 4, 0, 7, 0}}
     int A[5][5]
     int nodes[size(G)][2]
-    int finalset[3]
+    int set[3]
     int splitgarbage[size(G)-1][4]
     
-    call mstkruskal(G, 5, A, nodes, finalset, splitgarbage)
+    call mstkruskal(G, 5, A, nodes, set, splitgarbage)
     

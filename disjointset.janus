@@ -146,7 +146,7 @@ procedure main()
                {0, 4, 0, 7, 0}}
     int nodes[size(G)][2] = {{0}, {0}}
     int sets[size(G)][3] = {{0}, {0}, {0}}
-    int splitgarbage[size(G)][4] = {{0}, {0}, {0}, {0}}
+    int splitgarbage[size(G)-1][4] = {{0}, {0}, {0}, {0}}
     int splitcounter = 0
     
     local int i = 0

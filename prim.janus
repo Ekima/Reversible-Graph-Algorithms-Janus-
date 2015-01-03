@@ -99,12 +99,10 @@ procedure extractmin(int A[], int heapsize, int min,
 
 procedure minheapify(int A[], int heapsize, int i,
                      int heapgarbage[], int garbagecounter, int garbagei)
-                     show(A)
     local int left = 0, int right = 0, int min = 0
     call left(i, left)
     call right(i, right)
     
-    local int x =  A[left][1] show(x) delocal int x =  A[left][1]
     if left <= heapsize && A[left][1] < A[i][1] then
         min += left
         if right <= heapsize && A[right][1] < A[min][1] then

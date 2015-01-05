@@ -1,0 +1,20 @@
+
+fordfulkerson(int G[], int nodes[], int s, int t)
+    findpath
+    skip
+
+call main()
+    // Graph with 5 nodes represented as an adjacency list
+    int G[10][2] = {{2, 2}, {4, 5},
+                    {1, 2}, {5, 4},
+                    {4, 4},
+                    {1, 5}, {3, 4}, {5, 7},
+                    {2, 4}, {4, 7}}
+    int nodes[5][3] = {{0, 0, 0},
+                       {2, 0, 0},
+                       {4, 0, 0},
+                       {5, 0, 0},
+                       {8, 0, 0}}
+    int s = 2
+    int t = 1
+    call fordfulkerson(G, nodes, s, t)

@@ -29,12 +29,12 @@ procedure makeset(int x, int nodes[], int sets[])
     sets[x][2] += 1 // Length
 
 /*
- * searchnodes traverses through a linked list and changes the parent sets
+ * searchnodes traverses through a linked list and changes the set membership
  *
  * Parameters:
  * int i            Current node
- * int newset       The new parent set
- * int oldset       The current parent set
+ * int newset       The new set
+ * int oldset       The current set
  * int nodes[]      A list of all current nodes added to the data structure. 
  * int sets[]       A list of all current sets added to the data structure.
  *
@@ -66,15 +66,17 @@ procedure union(int x, int y, int nodes[], int sets[],
         error("Trying to perform union with an empty set")
     fi sets[nodes[y][1]][2] = 0 || sets[nodes[x][1]][2] = 0
     
+    // Calculate which set is added to the other
     local int z = 0
     if sets[nodes[x][1]][2] >= sets[nodes[y][1]][2] then
-        splits[splitcounter][3] += x
-        z += y
-    else
         splits[splitcounter][3] += y
         z += x
+    else
+        splits[splitcounter][3] += x
+        z += y
     fi sets[nodes[x][1]][2] >= sets[nodes[y][1]][2]
     
+    // Store garbage
     // Tail of first set
     splits[splitcounter][0] += sets[nodes[splits[splitcounter][3]][1]][1]
     splits[splitcounter][1] += sets[nodes[z][1]][0] // Head of second set
@@ -85,9 +87,7 @@ procedure union(int x, int y, int nodes[], int sets[],
     
     // Set the tail of the first set to the tail of the second set
     sets[nodes[splits[splitcounter][3]][1]][1] -= splits[splitcounter][0]
-    local int ytail = sets[nodes[z][1]][1]
-    sets[nodes[splits[splitcounter][3]][1]][1] += ytail
-    delocal int ytail = sets[nodes[z][1]][1]
+    sets[nodes[splits[splitcounter][3]][1]][1] += sets[nodes[z][1]][1]
     
     // Set all values in the second set to 0
     sets[nodes[z][1]][0] -= splits[splitcounter][1]
@@ -147,57 +147,57 @@ procedure main()
     delocal int i = size(G)
     
     local int found = 0
-    call findset(0, 1, nodes, found)
+    call checksets(0, 1, nodes, found)
     if found = 0 then
         printf("Node 1 and 2 are not in the same set")
     else
         printf("Node 1 and 2 are in the same set")
     fi found = 0
-    uncall findset(0, 1, nodes, found)
+    uncall checksets(0, 1, nodes, found)
     delocal int found = 0
     
     call union(0, 1, nodes, sets, splitgarbage, splitcounter)
     local int found = 0
-    call findset(0, 1, nodes, found)
+    call checksets(0, 1, nodes, found)
     if found = 0 then
         printf("Node 1 and 2 are not in the same set")
     else
         printf("Node 1 and 2 are in the same set")
     fi found = 0
-    uncall findset(0, 1, nodes, found)
+    uncall checksets(0, 1, nodes, found)
     delocal int found = 0
     
     call union(3, 4, nodes, sets, splitgarbage, splitcounter)
     local int found = 0
-    call findset(3, 4, nodes, found)
+    call checksets(3, 4, nodes, found)
     if found = 0 then
         printf("Node 4 and 5 are not in the same set")
     else
         printf("Node 4 and 5 are in the same set")
     fi found = 0
-    uncall findset(3, 4, nodes, found)
+    uncall checksets(3, 4, nodes, found)
     delocal int found = 0
     
     call union(2, 4, nodes, sets, splitgarbage, splitcounter)
     local int found = 0
-    call findset(2, 4, nodes, found)
+    call checksets(2, 4, nodes, found)
     if found = 0 then
         printf("Node 3 and 5 are not in the same set")
     else
         printf("Node 3 and 5 are in the same set")
     fi found = 0
-    uncall findset(2, 4, nodes, found)
+    uncall checksets(2, 4, nodes, found)
     delocal int found = 0
     
     call union(4, 1, nodes, sets, splitgarbage, splitcounter)
     local int found = 0
-    call findset(4, 1, nodes, found)
+    call checksets(4, 1, nodes, found)
     if found = 0 then
         printf("Node 5 and 2 are not in the same set")
     else
         printf("Node 5 and 2 are in the same set")
     fi found = 0
-    uncall findset(4, 1, nodes, found)
+    uncall checksets(4, 1, nodes, found)
     delocal int found = 0
     sets[nodes[0][1]][0] <=> set[0]
     sets[nodes[0][1]][1] <=> set[1]

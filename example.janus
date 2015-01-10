@@ -1,0 +1,12 @@
+procedure removeedge(int G[], int node1, int node2, int removededge)
+    removededge += G[node1-1][node2-1]
+    G[node1-1][node2-1] -= removededge
+    G[node2-1][node1-1] -= removededge
+
+procedure main()
+    int G[][] = {{0, 2, 4},
+                 {2, 0, 3},
+                 {4, 3, 0}}
+    int removededge
+    
+    call removeedge(G, 1, 3, removededge)

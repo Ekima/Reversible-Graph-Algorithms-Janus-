@@ -1,6 +1,6 @@
 /*
  * Disjoint set data structure.
- * Has three functions: makeset, union and findset
+ * Has three functions: makeset, union and checkset (similar to findset)
  * Uses a linked list with a weighted-union heuristic, thus hopefully
  * maintaining O(m + nlgn) time, where m is a sequence of the three functions
  * and n is he amount of makeset operations.
@@ -61,7 +61,7 @@ procedure searchnodes(int i, int newset, int oldset, int nodes[], int sets[])
  * The combined set of x and y are added to the data structure
  */
 procedure union(int x, int y, int nodes[], int sets[],
-                int splits[], int splitcounter)
+                int garbage[], int counter)
     if sets[nodes[y][1]][2] = 0 || sets[nodes[x][1]][2] = 0 then
         error("Trying to perform union with an empty set")
     fi sets[nodes[y][1]][2] = 0 || sets[nodes[x][1]][2] = 0
@@ -69,44 +69,44 @@ procedure union(int x, int y, int nodes[], int sets[],
     // Calculate which set is added to the other
     local int z = 0
     if sets[nodes[x][1]][2] >= sets[nodes[y][1]][2] then
-        splits[splitcounter][3] += y
+        garbage[counter][3] += y
         z += x
     else
-        splits[splitcounter][3] += x
+        garbage[counter][3] += x
         z += y
     fi sets[nodes[x][1]][2] >= sets[nodes[y][1]][2]
     
     // Store garbage
     // Tail of first set
-    splits[splitcounter][0] += sets[nodes[splits[splitcounter][3]][1]][1]
-    splits[splitcounter][1] += sets[nodes[z][1]][0] // Head of second set
-    splits[splitcounter][2] += sets[nodes[z][1]][2] // Length of second set
+    garbage[counter][0] += sets[nodes[garbage[counter][3]][1]][1]
+    garbage[counter][1] += sets[nodes[z][1]][0] // Head of second set
+    garbage[counter][2] += sets[nodes[z][1]][2] // Length of second set
     
     // Set the tail of the first set to point to the head of the second set
-    nodes[splits[splitcounter][3]][0] += splits[splitcounter][1] + 1
+    nodes[garbage[counter][3]][0] += garbage[counter][1] + 1
     
     // Set the tail of the first set to the tail of the second set
-    sets[nodes[splits[splitcounter][3]][1]][1] -= splits[splitcounter][0]
-    sets[nodes[splits[splitcounter][3]][1]][1] += sets[nodes[z][1]][1]
+    sets[nodes[garbage[counter][3]][1]][1] -= garbage[counter][0]
+    sets[nodes[garbage[counter][3]][1]][1] += sets[nodes[z][1]][1]
     
     // Set all values in the second set to 0
-    sets[nodes[z][1]][0] -= splits[splitcounter][1]
-    sets[nodes[z][1]][1] -= sets[nodes[splits[splitcounter][3]][1]][1]
-    sets[nodes[z][1]][2] -= splits[splitcounter][2]
+    sets[nodes[z][1]][0] -= garbage[counter][1]
+    sets[nodes[z][1]][1] -= sets[nodes[garbage[counter][3]][1]][1]
+    sets[nodes[z][1]][2] -= garbage[counter][2]
     
-    call searchnodes(splits[splitcounter][1], nodes[splits[splitcounter][3]][1],
-                     splits[splitcounter][1], nodes, sets)
+    call searchnodes(garbage[counter][1], nodes[garbage[counter][3]][1],
+                     garbage[counter][1], nodes, sets)
     
     // Add the length of the second set to the length of the first set
-    sets[nodes[splits[splitcounter][3]][1]][2] += splits[splitcounter][2]
+    sets[nodes[garbage[counter][3]][1]][2] += garbage[counter][2]
     
-    if splits[splitcounter][3] = x then
+    if garbage[counter][3] = x then
         z -= y
     else
         z -= x
-    fi splits[splitcounter][3] = x
+    fi garbage[counter][3] = x
     delocal int z = 0
-    splitcounter += 1
+    counter += 1
     
 /*
  * checksets checks if two nodes are in the same set.
@@ -129,22 +129,22 @@ procedure checksets(int x, int y, int nodes[], int found)
  * Main procedure. Tests the functions.
  */
 procedure main()
-    int G[][] = {{0, 2, 0, 5, 0},
-               {2, 0, 0, 0, 4},
-               {0, 0, 0, 4, 0},
-               {5, 0, 4, 0, 7},
-               {0, 4, 0, 7, 0}}
-    int nodes[size(G)][2] = {{0}}
+    // Node information (empty). Can contain up to 5 nodes.
+    int nodes[5][2] = {{0}}
+    // Set information (empty). Contains the sets expected at output, here 1.
     int set[3]
-    int splitgarbage[size(G)-1][4] = {{0}}
-    local int sets[size(G)][3] = {{0}}, int splitcounter = 0
+    // Garbage output
+    int garbage[size(nodes)-1][4] = {{0}}
+    // Intermediate garbage (all set information and garbage counter)
+    local int sets[size(nodes)][3] = {{0}}, int counter = 0
     
+    // Initialize the a full collection
     local int i = 0
     from i = 0 do
         call makeset(i, nodes, sets)
         i += 1
-    until i = size(G)
-    delocal int i = size(G)
+    until i = size(nodes)
+    delocal int i = size(nodes)
     
     local int found = 0
     call checksets(0, 1, nodes, found)
@@ -156,7 +156,7 @@ procedure main()
     uncall checksets(0, 1, nodes, found)
     delocal int found = 0
     
-    call union(0, 1, nodes, sets, splitgarbage, splitcounter)
+    call union(0, 1, nodes, sets, garbage, counter)
     local int found = 0
     call checksets(0, 1, nodes, found)
     if found = 0 then
@@ -167,7 +167,7 @@ procedure main()
     uncall checksets(0, 1, nodes, found)
     delocal int found = 0
     
-    call union(3, 4, nodes, sets, splitgarbage, splitcounter)
+    call union(3, 4, nodes, sets, garbage, counter)
     local int found = 0
     call checksets(3, 4, nodes, found)
     if found = 0 then
@@ -178,7 +178,7 @@ procedure main()
     uncall checksets(3, 4, nodes, found)
     delocal int found = 0
     
-    call union(2, 4, nodes, sets, splitgarbage, splitcounter)
+    call union(2, 4, nodes, sets, garbage, counter)
     local int found = 0
     call checksets(2, 4, nodes, found)
     if found = 0 then
@@ -189,7 +189,7 @@ procedure main()
     uncall checksets(2, 4, nodes, found)
     delocal int found = 0
     
-    call union(4, 1, nodes, sets, splitgarbage, splitcounter)
+    call union(4, 1, nodes, sets, garbage, counter)
     local int found = 0
     call checksets(4, 1, nodes, found)
     if found = 0 then
@@ -202,4 +202,4 @@ procedure main()
     sets[nodes[0][1]][0] <=> set[0]
     sets[nodes[0][1]][1] <=> set[1]
     sets[nodes[0][1]][2] <=> set[2]
-    delocal int sets[size(G)][3] = {{0}}, int splitcounter = size(G)-1
+    delocal int sets[size(nodes)][3] = {{0}}, int counter = size(nodes)-1

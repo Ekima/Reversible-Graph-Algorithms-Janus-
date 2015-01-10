@@ -3,7 +3,7 @@
  * The queue is represented as an integer array and items must be integers.
  * Empty spots in the queue are represented as 0's.
  *
- * To initialize a queue, create an empty integer array (with 0's) and a
+ * To initialize an empty queue, create an empty integer array (with 0's) and a
  * a headpointer and tailpointer, both initiated to 0.
  */
  
@@ -15,7 +15,7 @@
  * int tailpointer  Pointer to the last item in the queue
  * int item         Item to add to the queue.
  * 
- * Returns:
+ * Postcondition:
  * A queue with the item added to the tail and an empty item (0).
  *
  * Errors:
@@ -51,9 +51,9 @@ procedure enqueue(int queue[], int tailpointer, int item)
  * Parameters:
  * int queue[]      Queue to add item to.
  * int headpointer  Pointer to the first item in the queue
- * int item         Empty item placeholder.
+ * int placeholder  Empty item placeholder.
  * 
- * Returns:
+ * Postcondition:
  * A queue with the first item removed and the dequeued item.
  *
  * Errors:
@@ -61,20 +61,20 @@ procedure enqueue(int queue[], int tailpointer, int item)
  * Queue is empty.
  */
  
-procedure dequeue(int queue[], int headpointer, int item)
+procedure dequeue(int queue[], int headpointer, int placeholder)
     // Error checks (input)
-    if item != 0 then
+    if placeholder != 0 then
         error("Placeholder not empty (0).")
-    fi item != 0
+    fi placeholder != 0
     if queue[headpointer] = 0 then
         error("Queue is empty. Tried to remove item from empty queue.")
     fi queue[headpointer] = 0
     
     // Loads the queue item into the placeholder and empties the queue spot
     local int tmp = queue[headpointer]
-        item += tmp
+        placeholder += tmp
         queue[headpointer] -= tmp
-    delocal int tmp = item
+    delocal int tmp = placeholder
     
     // Goes to next queue spot
     if headpointer + 1 != size(queue) then
@@ -90,6 +90,7 @@ procedure dequeue(int queue[], int headpointer, int item)
   */
   
 procedure main()
+    // Queue of size 3 with pointers initialized to 0
     int queue[3]
     int headpointer
     int tailpointer

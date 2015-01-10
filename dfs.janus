@@ -35,91 +35,76 @@ procedure getlist(int adjacent[], int start, int end, int res[])
  * DFS initializes the depth first search of a graph G at time 0.
  *
  * Parameters:
- * int Gadjacent[] A list of adjacency list elements
- * int Gnodes[]    Information about the nodes (pointers and (empty) timestamps)
- * int Gsize       Number of nodes in G
- *
- * ** Note: Once a way to find the size of an array in a two-dimensional array
- * is created, Gsize can be replaced with a local int Gsize = Gnodes[0] **
+ * int G[] A list of adjacency list elements
+ * int nodes[]    Information about the nodes (pointers and (empty) timestamps)
  *
  * Returns:
- * The original graph represented by G and the pointers in Gnodes, with an
+ * The original graph represented by G and the pointers in nodes, with an
  * updated list of timestamps representing the subtrees of G
  */
-procedure DFS(int Gadjacent[], int Gnodes[], int Gsize)
+procedure DFS(int G[], int nodes[])
     local int time = 0, int i = 0
     
     // We run through each individual node and check if they have been visited
     // (timestamped). If they haven't we run DFSvisit.
     from i = 0 do
-        if Gnodes[1][i] = 0 then
-            call DFSvisit(Gadjacent, Gnodes, Gsize, i, time)
-        fi Gnodes[2][i] = time
+        if nodes[i][1] = 0 then
+            call DFSvisit(G, nodes, i, time)
+        fi nodes[i][2] = time
         i += 1
-    until i = Gsize
+    until i = size(nodes)
     
-    delocal int time = Gsize * 2, int i = Gsize
+    delocal int time = size(nodes) * 2, int i = size(nodes)
 
 /*
  * DFSvisit marks the current node with the current time, then recursively
  * does the same with each of its adjacent nodes if they have not been visited.
  *
  * Parameters:
- * int Gadjacent[] A list of adjacency list elements
- * int Gnodes[]    Information about the nodes (pointers and (empty) timestamps)
- * int Gsize       Number of nodes in G
+ * int G[] A list of adjacency list elements
+ * int nodes[]    Information about the nodes (pointers and (empty) timestamps)
  * int u           A number indicating the current node visited
  * int time        The current time
- *
- * ** Note: Once a way to find the size of an array in a two-dimensional array
- * is created, Gsize can be replaced with a local int Gsize = Gnodes[0] **
  *
  * Returns:
  * A timestamped tree of all the subnotes in u
  */
-procedure DFSvisit(int Gadjacent[], int Gnodes[], int Gsize, int u, int time)
+procedure DFSvisit(int G[], int nodes[], int u, int time)
     // The time is incremented and the node gets entry-timestamped
     time += 1
-    Gnodes[1][u] += time
+    nodes[u][1] += time
     
     // end contains a pointer to the end of the wanted list
     local int end = 0
-    if u = Gsize - 1 then
+    if u = size(nodes) - 1 then
         // If we try to get the last list we stop at the end of the element list
-        end += size(Gadjacent)
+        end += size(G)
     else
         // Or else, we stop where the next list starts
-        end += Gnodes[0][u + 1]
-    fi u = Gsize - 1
-    
-    // We get the adjacent nodes of current node
-    local int curadj[end - Gnodes[0][u]] = {0}
-    call getlist(Gadjacent, Gnodes[0][u], end, curadj)
+        end += nodes[u + 1][0]
+    fi u = size(nodes) - 1
     
     // The adjacent nodes are checked and if they have not been visited,
     // DFSvisit is called with the unvisited node
-    local int r = 0
-    from r = 0 do
-        if Gnodes[1][curadj[r]-1] = 0 then
-            call DFSvisit(Gadjacent, Gnodes, Gsize, curadj[r]-1, time)
-        fi Gnodes[1][curadj[r]-1] = time || Gnodes[2][curadj[r]-1] = time
+    local int r = nodes[u][0]
+    from r = nodes[u][0] do
+        if nodes[G[r]-1][1] = 0 then
+            call DFSvisit(G, nodes, G[r]-1, time)
+        fi nodes[G[r]-1][1] = time || nodes[G[r]-1][2] = time
         r += 1
-    until r = size(curadj)
-    delocal int r = size(curadj)
+    until r = end
+    delocal int r = end
     
     // The time is incremented and the node gets exit-timestamped
     time += 1
-    Gnodes[2][u] += time
-    
-    uncall getlist(Gadjacent, Gnodes[0][u], end, curadj)
-    delocal int curadj[end - Gnodes[0][u]] = {0}
+    nodes[u][2] += time
     
     // end is delocated
-    if u = Gsize - 1 then
-        end -= size(Gadjacent)
+    if u = size(nodes) - 1 then
+        end -= size(G)
     else
-        end -= Gnodes[0][u + 1]
-    fi u = Gsize - 1
+        end -= nodes[u + 1][0]
+    fi u = size(nodes) - 1
     delocal int end = 0
 
 /*
@@ -127,11 +112,9 @@ procedure DFSvisit(int Gadjacent[], int Gnodes[], int Gsize, int u, int time)
  */
 procedure main()
     // Adjacency list, list of adjacent nodes
-    int Gadjacent[] = {2, 4, 1, 5, 4, 1, 3, 5, 2, 4, 7, 4}
+    int G[] = {2, 4, 1, 5, 4, 1, 3, 5, 2, 4, 7, 4}
     // Adjacency list, node information.
     // Each node has a pointer to their first element and two timestamps
-    int Gnodes[3][7] = {{0, 2, 4, 5, 8, 10, 11},{0},{0}}
-    // Number of nodes in G
-    int Gsize = 7
+    int nodes[7][3] = {{0}, {2}, {4}, {5}, {8}, {10}, {11}}
     
-    call DFS(Gadjacent, Gnodes, Gsize)
+    call DFS(G, nodes)

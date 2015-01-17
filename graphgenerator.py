@@ -21,10 +21,10 @@ def uwud():
             if x < y:
                 graph[x][y] = random.randint(0, 1)
                 graph[y][x] = graph[x][y]
-    file.write("[[")
-    file.write(('],\n['.join([','.join(['{:1}'.format(item) for item in row]) 
+    file.write("{{")
+    file.write(('},\n{'.join([','.join(['{:1}'.format(item) for item in row]) 
       for row in graph])))
-    file.write("]]")
+    file.write("}}")
     file.close()
 
 def uwd():
@@ -35,10 +35,10 @@ def uwd():
         for y in range(size):
             if x != y:
                 graph[x][y] = random.randint(0, 1)
-    file.write("[[")
-    file.write(('],\n['.join([','.join(['{:1}'.format(item) for item in row]) 
+    file.write("{{")
+    file.write(('},\n{'.join([','.join(['{:1}'.format(item) for item in row]) 
       for row in graph])))
-    file.write("]]")
+    file.write("}}")
     file.close()
 
 def wud():
@@ -51,10 +51,10 @@ def wud():
             if x < y:
                 graph[x][y] = random.randint(0, maxweight)
                 graph[y][x] = graph[x][y]
-    file.write("[[")
-    file.write(('],\n['.join([','.join(['{:1}'.format(item) for item in row]) 
+    file.write("{{")
+    file.write(('},\n{'.join([','.join(['{:1}'.format(item) for item in row]) 
       for row in graph])))
-    file.write("]]")
+    file.write("}}")
     file.close()
 
 def wd():
@@ -66,10 +66,10 @@ def wd():
         for y in range(size):
             if x != y:
                 graph[x][y] = random.randint(0, maxweight)
-    file.write("[[")
-    file.write(('],\n['.join([','.join(['{:1}'.format(item) for item in row]) 
+    file.write("{{")
+    file.write(('},\n{'.join([','.join(['{:1}'.format(item) for item in row]) 
       for row in graph])))
-    file.write("]]")
+    file.write("}}")
     file.close()
 
 # map the inputs to the function blocks

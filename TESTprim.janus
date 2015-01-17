@@ -280,7 +280,9 @@ procedure MSTPrim(int G[], int nodes[], int r, int queue[],
     delocal int i = 0, int queuesize = 0, int extractcount = size(nodes)
 
 procedure main()
-    // Graph with 5 nodes represented as an adjacency list
+    // Empty/nonexistent graph
+    // Graph with 1 node
+    // Graph with 100 nodes represented as an adjacency list
     int G[10][2] = {{2, 2}, {4, 5},
                     {1, 2}, {5, 4},
                     {4, 4},

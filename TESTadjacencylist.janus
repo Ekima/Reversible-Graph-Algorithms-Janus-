@@ -1,0 +1,66 @@
+/*
+ * Adjacency list
+ * The list is represented as two integer array.
+ *
+ * G contains all adjacent nodes of each node, grouped by nodes.
+ * nodes contains pointers to the starting element of each list,
+ * and must be ordered in an ascending list.
+ */
+ 
+ /*
+  * getlist gets the contents of a single list in the adjacency list.
+  *
+  * Parameters:
+  * int G[]         A list of adjacency list elements
+  * int nodes[]     A list of pointers to the start of each individual list
+  * int i           The list that should get extracted (numbered)
+  * int res[]       A list to store the returned elements in
+  * 
+  * Postcondition:
+  * A copy of a the items in a list in the adjacency list.
+  */
+procedure getlist(int G[], int nodes[], int i, int res[])
+    // end contains a pointer to the end of the wanted list
+    local int end = 0
+    if i = (size(nodes) - 1) then
+        // If we try to get the last list we stop at the end of the element list
+        end += size(G)
+    else
+        // Or else, we stop where the next list starts
+        end += nodes[i + 1]
+    fi i = (size(nodes) - 1)
+    
+    // All elements of the wanted list are loaded into res
+    local int r = nodes[i]
+    from r = nodes[i] do
+        res[r - nodes[i]] += G[r]
+        r += 1
+    until r = end
+    delocal int r = end
+    
+    // end is delocated
+    if i = (size(nodes) - 1) then
+        end -= size(G)
+    else
+        end -= nodes[i + 1]
+    fi i = (size(nodes) - 1)
+    delocal int end = 0
+ 
+procedure main()
+    // Graph with 5 nodes represented as an adjacency list
+    int G[] = {2, 4, 1, 5, 4, 1, 3, 5, 2, 4}
+    int nodes[] = {0, 2, 4, 5, 8}
+    
+    // Container arrays for the adjacent nodes of each node
+    int a[nodes[1]-nodes[0]]
+    int b[nodes[2]-nodes[1]]
+    int c[nodes[3]-nodes[2]]
+    int d[nodes[4]-nodes[3]]
+    int e[size(G)-nodes[4]]
+    
+    // Transfer each list of adjacent nodes to their respective container array
+    call getlist(G, nodes, 0, a)
+    call getlist(G, nodes, 1, b)
+    call getlist(G, nodes, 2, c)
+    call getlist(G, nodes, 3, d)
+    call getlist(G, nodes, 4, e)

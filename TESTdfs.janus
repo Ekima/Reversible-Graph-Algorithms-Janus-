@@ -88,9 +88,9 @@ procedure DFSvisit(int G[], int nodes[], int u, int time)
     // DFSvisit is called with the unvisited node
     local int r = nodes[u][0]
     from r = nodes[u][0] do
-        if nodes[G[r]-1][1] = 0 then // The adjacent node's first time stamp is 0
+        if nodes[G[r]-1][1] = 0 then
             call DFSvisit(G, nodes, G[r]-1, time)
-        fi nodes[G[r]-1][2] = time  // The adjacent node's second time matches the current time
+        fi nodes[G[r]-1][1] = time || nodes[G[r]-1][2] = time
         r += 1
     until r = end
     delocal int r = end

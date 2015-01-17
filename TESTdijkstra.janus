@@ -234,7 +234,7 @@ procedure joinset(int set[], int u, int nodes[])
     set[u][1] += nodes[u][1]
     set[u][2] += nodes[u][2]
 
-/* dijkstra finds the shortest paths to all nodes in a graph G from a source s.
+/* MSTPrim creates a minimum spanning tree from a graph.
  * Uses an adjacency list with an added key to represent the graph.
  *
  * int G[]                  An adjacency matrix representing G
@@ -250,7 +250,7 @@ procedure joinset(int set[], int u, int nodes[])
  * Post conditions:
  * nodes[] contains a shortest path graph for the graph G
  */
-procedure dijkstra(int G[], int nodes[], int s, int queue[],
+procedure dijkstra(int G[], int nodes[], int s, int set[], int queue[],
                    int relaxgarbage[], int relaxcounters[], int extractgarbage[],
                    int count, int adjacentgarbage[])
     local int queuesize = size(queue) - 1, int extractcounter = 0
@@ -264,6 +264,7 @@ procedure dijkstra(int G[], int nodes[], int s, int queue[],
         local int adjlist[adjsize] = {0}
         call getlist(G, nodes, u-1, adjlist)
         
+        call joinset(set, u-1, nodes)
         local int i = 0
         from i = 0 do
             if queuesize != 0 then
@@ -297,6 +298,7 @@ procedure main()
                        {4, 0, 0},
                        {5, 0, 0},
                        {8, 0, 0}}
+    int set[size(nodes)][3]
     int queuegarbage[size(nodes)+1]
     int relaxgarbage[size(nodes)][(size(nodes)+3)/2]
     int relaxcounters[size(nodes)]
@@ -305,7 +307,7 @@ procedure main()
     int adjacentgarbage[size(G)][2]
     printf("")
     
-    call dijkstra(G, nodes, 3, queuegarbage,
+    call dijkstra(G, nodes, 3, set, queuegarbage,
                   relaxgarbage, relaxcounters, extractgarbage,
                   count, adjacentgarbage)
     

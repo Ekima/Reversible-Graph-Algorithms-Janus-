@@ -1,0 +1,264 @@
+/* Minimum-priority queue heap implementation */
+
+/*
+ * insert insert a new item into the minimum priority queue
+ *
+ * Parameters:
+ * int A[]              A minimum heap array with an inconsistency at index i
+ * int heapsize         The heaps current size
+ * int key              The key value of the new item
+ * int garbage[]        An array used for garbage
+ * int garbagecounter[] A counter used when traversing through the heap
+ *
+ * Postcondition:
+ * The item has been inserted in the right place in the queue
+ */
+procedure insert(int A[], int heapsize, int key, int garbage[], int garbagecounter)
+    heapsize += 1
+    // Call decreasekey on the last (and newly inserted) item in the queue
+    call decreasekey(A, heapsize, key, garbage, garbagecounter)
+
+/*
+ * decreasekey decreases the key of a node in the queue
+ *
+ * Parameters:
+ * int A[]              A minimum heap array with an inconsistency at index i
+ * int i                Index to the node which key should be decreased
+ * int key              The new key value of the item
+ * int garbage[]        An array used for garbage
+ * int garbagecounter   A counter used when traversing through the heap
+ *
+ * Postcondition:
+ * The minimum item of the minimum priority queue has been transferred to min
+ */
+procedure decreasekey(int A[], int i, int key,
+                      int garbage[], int garbagecounter)
+    local int tmp = i
+    if key > A[i] then
+        error("New key is bigger than current key")
+    fi key > A[i]
+    
+    garbage[garbagecounter] += A[i] - key
+    A[i] -= garbage[garbagecounter]
+    
+    local int loopcond = 1
+    from loopcond = 1 && garbagecounter = 0 do
+        garbagecounter += 1
+        local int parent = 0
+        call parent(tmp, parent)
+        garbage[garbagecounter] += tmp
+        
+        if tmp <= 1 || A[parent] <= A[tmp] then
+            loopcond -= 1
+        else
+            A[tmp] <=> A[parent]
+            tmp -= garbage[garbagecounter]
+            tmp += parent
+        fi loopcond = 0
+        
+        uncall parent(garbage[garbagecounter], parent)
+        delocal int parent = 0
+    until loopcond = 0
+    delocal int loopcond = 0
+    delocal int tmp = garbage[garbagecounter]
+
+ /*
+ * minimum the minimum value of a minimum list and copies its value to a
+ * container
+ *
+ * Parameters:
+ * int A[]          A minimum queue
+ * int min          Container for the content of the minimum node. Must be 0.
+ *
+ * Postcondition:
+ * min contains the content of the minimum node of the minimum queue A[]
+ */
+procedure minimum(int A[], int min)
+    min += A[1]
+
+/*
+ * extractmin extracts the minimum item in a minimum priority queue, then
+ * rearranges the underlying heap to ensure the minimum heap property.
+ *
+ * Parameters:
+ * int A[]              A minimum heap array with an inconsistency at index i
+ * int heapsize         The heaps current size
+ * int min              A placeholder for the minimum item in the heap
+ * int heapgarbage[]    An array used for garbage
+ *
+ * Postcondition:
+ * The minimum item of the minimum priority queue has been transferred to min
+ */
+procedure extractmin(int A[], int heapsize, int min,
+                     int heapgarbage[])
+    if heapsize < 1 then
+        error("Heap underflow")
+    fi heapsize < 1
+    
+    // Extract minimum element
+    min += A[1]
+    A[1] -= min
+    A[1] += 4294967295
+    
+    // Swap minimum element with the final element of the heap
+    A[1] <=> A[heapsize]
+    // Decrease size of heap
+    heapsize -= 1
+    // Call minheapify to preserve minimum heap property
+    local int garbagecounter = 0
+    call minheapify(A, heapsize, 1, heapgarbage, garbagecounter)
+    delocal int garbagecounter = 0
+
+/*
+ * minheapify ensure the minimum heap property of a tree, where both subtrees of
+ * the node at index i has the minimum heap property, yet the node at index i
+ * might be larger
+ *
+ * Parameters:
+ * int A[]              A minimum heap array with an inconsistency at index i
+ * int heapsize         The heaps current size
+ * int i                An index for a node in the heap
+ * int heapgarbage[]    An array used for garbage
+ * int garbagecounter   A counter signifying the current level of recursion i
+ *                      the heap
+ *
+ * Postcondition:
+ * A minimum heap which has no inconsistency at index i and its two subtrees
+ */
+procedure minheapify(int A[], int heapsize, int i,
+                     int heapgarbage[], int garbagecounter)
+    local int left = 0, int right = 0, int min = 0
+    call left(i, left)
+    call right(i, right)
+    
+    // Find the smallest note between i and the children of i
+    if left <= heapsize && A[left] < A[i] then
+        min += left
+        if right <= heapsize && A[right] < A[min] then
+            min -= left
+            min += right
+        fi right <= heapsize && A[right] < A[left]
+    else
+        min += i
+        if right <= heapsize && A[right] < A[min] then
+            min -= i
+            min += right
+        fi right <= heapsize && A[right] < A[i]
+    fi left <= heapsize && A[left] < A[i]
+    
+    // Save it in the garbage
+    heapgarbage[garbagecounter] += min
+    garbagecounter += 1
+    
+    // If either of the children is smaller, switch i with the child and
+    // call minheapify recursively
+    if min != i then
+        A[i] <=> A[min]
+        call minheapify(A, heapsize, min, heapgarbage, garbagecounter)
+        
+        if left = heapgarbage[garbagecounter-1] then
+            min -= left
+        else
+            min -= right
+        fi left = heapgarbage[garbagecounter-1]
+    fi min = 0
+    
+    garbagecounter -= 1
+    
+    // Set the current min to 0
+    if i = heapgarbage[garbagecounter] then
+        min -= i
+    fi i = heapgarbage[garbagecounter]
+    
+    uncall right(i, right)
+    uncall left(i, left)
+    delocal int left = 0, int right = 0, int min = 0
+
+ /*
+ * parent finds the index of the parent of the node at index i
+ *
+ * Parameters:
+ * int i            Node index
+ * int parent       Container for the index of the parent node. Must be 0.
+ *
+ * Postcondition:
+ * parent contains an index to the parent node of node #i
+ */
+procedure parent(int i, int parent)
+    parent += i / 2
+
+ /*
+ * left finds the index of the left child of the node at index i
+ *
+ * Parameters:
+ * int i            Node index
+ * int left        Container for the index of the child node. Must be 0.
+ *
+ * Postcondition:
+ * left contains an index to the left child node of node #i
+ */
+procedure left(int i, int left)
+    left += 2 * i
+
+ /*
+ * right finds the index of the right child of the node at index i
+ *
+ * Parameters:
+ * int i            Node index
+ * int right        Container for the index of the child node. Must be 0.
+ *
+ * Postcondition:
+ * right contains an index to the right child node of node #i
+ */
+procedure right(int i, int right)
+    right += 2 * i + 1
+
+procedure main()
+    // Initial minimum heap.
+    int A[] = {0, 1, 2, 3, 7, 4, 8, 9}
+    
+    int heapsize = size(A)-1
+    // Heap garbage for each time we perform minheapify (used in extractmin).
+    // The size can differ in accordance to the heap's size.
+    int heapgarbage[(heapsize+1)/2]
+    int heapgarbage1[heapsize/2]
+    int heapgarbage2[(heapsize-1)/2]
+    int heapgarbage3[(heapsize-2)/2]
+    int heapgarbage4[(heapsize-3)/2]
+    int heapgarbage5[(heapsize-4)/2]
+    
+    // Containers for the elements we extract, and insert.
+    int min1 = 0
+    int min2 = 0
+    int min3 = 0
+    int min4 = 0
+    int min5 = 0
+    int min6 = 0
+    
+    // Garbage for each time we perform decreasekey (used in insert).
+    int insertgarbage[(heapsize+1)/2]
+    int insertcounter = 0
+    int insertgarbage1[(heapsize+1)/2]
+    int insertcounter1 = 0
+    int insertgarbage2[(heapsize+1)/2]
+    int insertcounter2 = 0
+    int insertgarbage3[(heapsize+1)/2]
+    int insertcounter3 = 0
+    int insertgarbage4[(heapsize+1)/2]
+    int insertcounter4 = 0
+    
+    call extractmin(A, heapsize, min1, heapgarbage)
+    call extractmin(A, heapsize, min2, heapgarbage1)
+    call extractmin(A, heapsize, min3, heapgarbage2)
+    call extractmin(A, heapsize, min4, heapgarbage3)
+    call extractmin(A, heapsize, min5, heapgarbage4)
+    call extractmin(A, heapsize, min6, heapgarbage5)
+    
+    call insert(A, heapsize, min3, insertgarbage, insertcounter)
+    call insert(A, heapsize, min2, insertgarbage1, insertcounter1)
+    call insert(A, heapsize, min5, insertgarbage2, insertcounter2)
+    call insert(A, heapsize, min4, insertgarbage3, insertcounter3)
+    call insert(A, heapsize, min1, insertgarbage4, insertcounter4)
+    
+    
+    

@@ -1,7 +1,9 @@
 procedure removeedge(int G[], int node1, int node2, int removededge)
     removededge += G[node1-1][node2-1]
     G[node1-1][node2-1] -= removededge
-    G[node2-1][node1-1] -= removededge
+    if node1 != node2 then
+    	G[node2-1][node1-1] -= removededge
+    fi node1 != node2
 
 procedure main()
     int G[][] = {{0, 2, 4},

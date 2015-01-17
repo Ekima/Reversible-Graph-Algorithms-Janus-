@@ -78,27 +78,27 @@ procedure union(int x, int y, int nodes[], int sets[],
     
     // Store garbage
     // Tail of first set
-    garbage[counter][0] += sets[nodes[z][1]][1]
-    garbage[counter][1] += sets[nodes[garbage[counter][3]][1]][0] // Head of second set
-    garbage[counter][2] += sets[nodes[garbage[counter][3]][1]][2] // Length of second set
+    garbage[counter][0] += sets[nodes[garbage[counter][3]][1]][1]
+    garbage[counter][1] += sets[nodes[z][1]][0] // Head of second set
+    garbage[counter][2] += sets[nodes[z][1]][2] // Length of second set
     
     // Set the tail of the first set to point to the head of the second set
-    nodes[z][0] += garbage[counter][1] + 1
+    nodes[garbage[counter][3]][0] += garbage[counter][1] + 1
     
     // Set the tail of the first set to the tail of the second set
-    sets[nodes[z][1]][1] -= garbage[counter][0]
-    sets[nodes[z][1]][1] += sets[nodes[garbage[counter][3]][1]][1]
+    sets[nodes[garbage[counter][3]][1]][1] -= garbage[counter][0]
+    sets[nodes[garbage[counter][3]][1]][1] += sets[nodes[z][1]][1]
     
     // Set all values in the second set to 0
-    sets[nodes[garbage[counter][3]][1]][0] -= garbage[counter][1]
-    sets[nodes[garbage[counter][3]][1]][1] -= sets[nodes[z][1]][1]
-    sets[nodes[garbage[counter][3]][1]][2] -= garbage[counter][2]
+    sets[nodes[z][1]][0] -= garbage[counter][1]
+    sets[nodes[z][1]][1] -= sets[nodes[garbage[counter][3]][1]][1]
+    sets[nodes[z][1]][2] -= garbage[counter][2]
     
-    call searchnodes(garbage[counter][1], nodes[z][1],
+    call searchnodes(garbage[counter][1], nodes[garbage[counter][3]][1],
                      garbage[counter][1], nodes, sets)
     
     // Add the length of the second set to the length of the first set
-    sets[nodes[z][1]][2] += garbage[counter][2]
+    sets[nodes[garbage[counter][3]][1]][2] += garbage[counter][2]
     
     if garbage[counter][3] = x then
         z -= y

@@ -1,0 +1,108 @@
+/*
+ * First In, First Out queue.
+ * The queue is represented as an integer array and items must be integers.
+ * Empty spots in the queue are represented as 0's.
+ *
+ * To initialize an empty queue, create an empty integer array (with 0's) and a
+ * a headpointer and tailpointer, both initiated to 0.
+ */
+ 
+/*
+ * enqueue adds an item to a queue.
+ * 
+ * Parameters:
+ * int queue[]      Queue to add item to.
+ * int tailpointer  Pointer to the last item in the queue
+ * int item         Item to add to the queue.
+ * 
+ * Postcondition:
+ * A queue with the item added to the tail and an empty item (0).
+ *
+ * Errors:
+ * Item added to the queue is empty (0).
+ * Queue is full.
+ */
+ 
+procedure enqueue(int queue[], int tailpointer, int item)
+    // Error checks (input)
+    if item = 0 then
+        error("Item added to queue is empty (0).")
+    fi item = 0
+    if queue[tailpointer] != 0 then
+        error("Queue is full. Cannot enqueue item.")
+    fi queue[tailpointer] != 0
+    
+    // Adds the item to the queue spot and empties the item
+    local int tmp = item
+        queue[tailpointer] += tmp
+        item -= tmp
+    delocal int tmp = queue[tailpointer]
+    
+    // Goes to next queue spot
+    if tailpointer + 1 != size(queue) then
+        tailpointer += 1
+    else
+        tailpointer -= size(queue) - 1
+    fi tailpointer != 0
+
+/*
+ * dequeue removes an item to a queue.
+ * 
+ * Parameters:
+ * int queue[]      Queue to add item to.
+ * int headpointer  Pointer to the first item in the queue
+ * int placeholder  Empty item placeholder.
+ * 
+ * Postcondition:
+ * A queue with the first item removed and the dequeued item.
+ *
+ * Errors:
+ * Placeholder item not empty (0).
+ * Queue is empty.
+ */
+ 
+procedure dequeue(int queue[], int headpointer, int placeholder)
+    // Error checks (input)
+    if placeholder != 0 then
+        error("Placeholder not empty (0).")
+    fi placeholder != 0
+    if queue[headpointer] = 0 then
+        error("Queue is empty. Tried to remove item from empty queue.")
+    fi queue[headpointer] = 0
+    
+    // Loads the queue item into the placeholder and empties the queue spot
+    local int tmp = queue[headpointer]
+        placeholder += tmp
+        queue[headpointer] -= tmp
+    delocal int tmp = placeholder
+    
+    // Goes to next queue spot
+    if headpointer + 1 != size(queue) then
+        headpointer += 1
+    else
+        headpointer -= size(queue) - 1
+    fi headpointer != 0
+    
+ /*
+  * main function.
+  * Initializes a FIFO queue and tests functions.
+  * Errors are not tested here.
+  */
+  
+procedure main()
+    // Queue of size 3 with pointers initialized to 0
+    int queue[3]
+    int headpointer
+    int tailpointer
+    
+    int item1 = 1
+    int item2 = 2
+    int item3 = 3
+    int item4 = 4
+    call enqueue(queue, tailpointer, item1)
+    call enqueue(queue, tailpointer, item2)
+    call enqueue(queue, tailpointer, item3)
+    call dequeue(queue, headpointer, item3)
+    call enqueue(queue, tailpointer, item4)
+    call dequeue(queue, headpointer, item2)
+    call dequeue(queue, headpointer, item1)

@@ -9,80 +9,77 @@
  * must be of size n x n.
  */
 
-/****************** START MERGESORT *******************/
+/****************** START QUICKSORT *******************/
 /* Created by Holger Bock Axelsen and Tetsuo Yokoyama */
-/****************** START MERGESORT *******************/
+/****************** START QUICKSORT *******************/
 
-procedure merge(int a[], int l, int m, int r, int p[])
-  local int b[r+1][3]={{0}}, int c[r+1][3]={{0}}, 
-        int p_b[r+1]={0}, int p_c[r+1]={0}
-        // @\label{lst:merge:local}@
-    local int k = l
-      from  k = l // @\label{lst:merge:fstloopbegin}@
-      loop  b[k-l][0] <=> a[k][0]
-            b[k-l][1] <=> a[k][1]
-            b[k-l][2] <=> a[k][2]
-            p_b[k-l] <=> p[k]
-            k += 1
-      until k = m + 1 // @\label{lst:merge:fstloopend}@
-      from  k = m + 1 // @\label{lst:merge:sndloopbegin}@
-      loop  c[k-m-1][0] <=> a[k][0]
-            c[k-m-1][1] <=> a[k][1]
-            c[k-m-1][2] <=> a[k][2]
-            p_c[k-m-1] <=> p[k]
-            k += 1
-      until k = r + 1 // @\label{lst:merge:sndloopend}@
-    delocal int k = r + 1
+// in-place quick sort
+procedure partition2(int a[], int l, int r, int p, int ord[])
+  local int j = l
+    from  j = l
+    loop  if a[0][j] <= a[0][r] then
+            p += 1
+            local int k = p  // slide a[p..j-1] to the right by one, and move a[j] to position p
+              from  k = p
+              loop  a[0][k] <=> a[0][j]
+                    a[1][k] <=> a[1][j]
+                    a[2][k] <=> a[2][j]
+                    ord[k] <=> ord[j]
+                    k += 1
+              until k = j
+            delocal int k = j  
+          fi (p >= l) && (ord[p] >= ord[j])
+          j += 1
+    until j = r + 1
+  delocal int j = r + 1
 
-    b[m-l+1][0] ^= 999
-    b[m-l+1][1] ^= 999
-    b[m-l+1][2] ^= 999
-    c[r-m][0] ^= 999 // set sentinel \label{lst:merge:setsentinel}
-    c[r-m][1] ^= 999 // set sentinel \label{lst:merge:setsentinel}
-    c[r-m][2] ^= 999 // set sentinel \label{lst:merge:setsentinel}
+// xor-copy to p the index of the maximum of ord[l..r]
+procedure max(int p, int ord[], int l, int r)
+  local stack gb = nil
+    local int m = 0
+      call max_sub(m,ord,l,r,gb)
+      p ^= m
+      uncall max_sub(m,ord,l,r,gb)
+    delocal int m = 0
+  delocal stack gb = nil
 
-    local int i = 0, int j = 0, int k = l
-      from  k = l // @\label{lst:merge:mainloopbegin}@
-      loop  if c[j][0] < b[i][0] then
-              a[k][0] <=> c[j][0]
-              a[k][1] <=> c[j][1]
-              a[k][2] <=> c[j][2]
-              p[k] <=> p_c[j]
-              j += 1
-            else
-              a[k][0] <=> b[i][0]
-              a[k][1] <=> b[i][1]
-              a[k][2] <=> b[i][2]
-              p[k] <=> p_b[i]
-              i += 1
-            fi p[k] > m // @\label{lst:merge:middle}@
-            k += 1
-      until k = r + 1 // @\label{lst:merge:mainloopend}@
-    delocal int i = m-l+1, int j = r-m, int k = r+1
-    
-    b[m-l+1][0] ^= 999
-    b[m-l+1][1] ^= 999
-    b[m-l+1][2] ^= 999
-    c[r-m][0] ^= 999  // zero clear sentinel \label{lst:merge:clearsentinel}
-    c[r-m][1] ^= 999  // zero clear sentinel \label{lst:merge:clearsentinel}
-    c[r-m][2] ^= 999  // zero clear sentinel \label{lst:merge:clearsentinel}
-  delocal int b[r+1][3]={{0}}, int c[r+1][3]={{0}},
-          int p_b[r+1]={0}, int p_c[r+1]={0}
-          // @\label{lst:merge:delocal}@
+procedure max_sub(int m, int ord[], int l, int r, stack gb)
+  m ^= l
+  local int i = l + 1
+    from  i = l + 1
+    loop  if ord[i] >= ord[m] then
+            push(m,gb)
+            m ^= i
+            push(1,gb)
+          else
+            push(0,gb)
+          fi top(gb) = 1
+          i += 1
+    until i = r + 1
+  delocal int i = r + 1
 
-procedure msort_sub(int a[], int l, int r, int p[])
+procedure qsort2(int a[], int l, int r, int p[])
   if l < r then
-    call msort_sub(a,l,(l+r)/2,p)
-    call msort_sub(a,(l+r)/2+1,r,p)
-    call merge(a,l,(l+r)/2,r,p)
+    local int q = l - 1     // q remembers where to divide
+      call partition2(a,l,r,q,p)
+      call qsort2(a,l,q-1,p)
+      call qsort2(a,q+1,r,p)
+      call max(q,p,l,r)     // zero clear q
+    delocal int q = 0
   fi l < r
 
-procedure msort(int a[], int n, int p[])
-  call msort_sub(a,0,n-1,p)
+// Setting to p[] identity permutation of length n
+procedure id_perm(int p[], int n)
+  local int i = 0
+    from  i = 0
+    loop  p[i] ^= i
+          i += 1
+    until i = n
+  delocal int i = n
 
-/******************* END MERGESORT ********************/
+/******************* END QUICKSORT ********************/
 /* Created by Holger Bock Axelsen and Tetsuo Yokoyama */
-/******************* END MERGESORT ********************/  
+/******************* END QUICKSORT ********************/  
 
 /*
  * extractedges extract the edge information (starting node, ending node,
@@ -101,9 +98,9 @@ procedure extractedges(int G[], int edgelist[])
     from i = 0 do
         from j = i do
             if G[i][j] != 0 then
-                edgelist[s][0] += G[i][j]
-                edgelist[s][1] += i+1
-                edgelist[s][2] += j+1
+                edgelist[0][s] += G[i][j]
+                edgelist[1][s] += i+1
+                edgelist[2][s] += j+1
                 s += 1
             fi G[i][j] != 0
             j += 1
@@ -191,40 +188,32 @@ procedure mstkruskal(int G[], int edgecount, int A[])
     local int visited[size(G)] = {0}
     
     // Gather all of the edges into a list.
-    local int edges[edgecount][3] = {{0}, {0}, {0}}
+    local int edges[3][edgecount] = {{0}, {0}, {0}}
     call extractedges(G, edges)
-    // Sort the edge list using merge
+    // Sort the edge list using quicksort
     local int p[edgecount] = {0}
-    local int r = 0
-    from r = 0 do
-        p[r] += r
-        r += 1
-    until r = edgecount
-    call msort(edges, edgecount, p)
+    call id_perm(p, edgecount)
+    call qsort2(edges, 0, edgecount - 1, p)
     
     from i = 0 do // Go through all edges
         // Findset checks two nodes combined by an edge are in the same subset
-        call findset(edges[i][1]-1, edges[i][2]-1, A, visited, visit, ret)
+        call findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, ret)
         if ret = 0 then
             // If they aren't, the two nodes are connected
-            uncall findset(edges[i][1]-1, edges[i][2]-1, A, visited, visit, ret)
-            call addedge(edges[i][1]-1, edges[i][2]-1, edges[i][0], A)
+            uncall findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, ret)
+            call addedge(edges[1][i]-1, edges[2][i]-1, edges[0][i], A)
         else
-            uncall findset(edges[i][1]-1, edges[i][2]-1, A, visited, visit, ret)
-        fi A[edges[i][1]-1][edges[i][2]-1] != 0
+            uncall findset(edges[1][i]-1, edges[2][i]-1, A, visited, visit, ret)
+        fi A[edges[1][i]-1][edges[2][i]-1] != 0
         i += 1
     until i = edgecount
     
     // Delocal values.
-    uncall msort(edges, edgecount, p)
-    from r = edgecount do
-        p[r-1] -= r-1
-        r -= 1
-    until r = 0
-    delocal int r = 0
+    uncall qsort2(edges, 0, edgecount - 1, p)
+    uncall id_perm(p, edgecount)
     delocal int p[edgecount] = {0}
     uncall extractedges(G, edges)
-    delocal int edges[edgecount][3] = {{0}, {0}, {0}}
+    delocal int edges[3][edgecount] = {{0}, {0}, {0}}
     delocal int visited[size(G)] = {0}
     delocal int i = edgecount, int ret = 0, int visit = 0
 

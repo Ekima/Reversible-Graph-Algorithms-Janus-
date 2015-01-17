@@ -113,28 +113,17 @@ procedure dequeue(int queue[], int headpointer, int placeholder)
         headpointer -= size(queue) - 1
     fi headpointer != 0
 
-/*
- * BFS searches a graph from a single source node creating a breadth-first tree.
- *
- * Parameters:
- * int G[]              A list of adjacency list elements
- * int nodes[]          A list of pointers to the start of each individual list
- * int s                The source node
- * int headpointer      A pointer to the head of a queue
- * int order[]          An array with the order taken in the BFS
- */
-procedure BFS(int G[], int nodes[], int s, int headpointer, int order[])
-    // FIFO queue
-    local int queue[size(G)] = {0}, int tailpointer = headpointer
-    // Storage for dequeued node and adjacent nodes, loopcounter
-    local int store = 0, int adjstore = 0, int i = 0
-    local int adj[size(G)] = {0} // Stores the current adjacent nodes
+procedure copy(int inputarray[], int outputarray[], int index)
+    local int i = 0
+    from i = 0 do
+        outputarray[i][index] += inputarray[i][index]
+        i += 1
+    until i = size(inputarray)
+    delocal int i = size(inputarray)
     
-    // We mark the current node as the source node and enqueue it
-    nodes[s-1][1] -= 1
-    store += s  
-    call enqueue(queue, tailpointer, store)
-    
+procedure BFS2(int G[], int nodes[], int headpointer, int tailpointer,
+               int queue[], int store, int adj[], int adjstore,
+               int order[], int i)
     from headpointer = 0 do
         if queue[headpointer] != 0 then
             // We dequeue a node and gets its adjacency list
@@ -162,12 +151,54 @@ procedure BFS(int G[], int nodes[], int s, int headpointer, int order[])
             store -= order[headpointer]
         fi queue[headpointer] != 1
     until headpointer = tailpointer
+
+/*
+ * BFS searches a graph from a single source node creating a breadth-first tree.
+ *
+ * Parameters:
+ * int G[]              A list of adjacency list elements
+ * int nodes[]          A list of pointers to the start of each individual list
+ * int s                The source node
+ * int headpointer      A pointer to the head of a queue
+ * int order[]          An array with the order taken in the BFS
+ */
+procedure BFS(int G[], int nodes[], int s)
+    local int order[size(nodes)-1] = {0}, int headpointer = 0
+    // FIFO queue
+    local int queue[size(G)] = {0}, int tailpointer = headpointer
+    // Storage for dequeued node and adjacent nodes, loopcounter
+    local int store = 0, int adjstore = 0, int i = 0
+    local int adj[size(G)] = {0} // Stores the current adjacent nodes
+    local int tmp[size(nodes)][2] = {{0}}
+    
+    call copy(nodes, tmp, 0)
+    
+    // We mark the current node as the source node and enqueue it
+    tmp[s-1][1] -= 1
+    store += s  
+    call enqueue(queue, tailpointer, store)
+    
+    call BFS2(G, tmp, headpointer, tailpointer, queue, store, adj, adjstore,
+              order, i)
+    
+    call copy(tmp, nodes, 1)
+    show(nodes)
+    
+    uncall BFS2(G, tmp, headpointer, tailpointer, queue, store, adj, adjstore,
+                order, i)
+    
+    uncall copy(nodes, tmp, 0)
+    
+    uncall enqueue(queue, tailpointer, store)
+    store -= s
+    tmp[s-1][1] += 1
     
     // Delocal local variables
-    
+    delocal int tmp[size(nodes)][2] = {{0}}
     delocal int adj[size(G)] = {0}
     delocal int store = 0, int adjstore = 0, int i = 0
     delocal int queue[size(G)] = {0}, int tailpointer = headpointer
+    delocal int order[size(nodes)-1] = {0}, int headpointer = 0
 
 /*
  * printpath prints a path from the source of a breadth-first tree to a node
@@ -206,12 +237,11 @@ procedure main()
                        {10, 0},
                        {11, 0}}
     int headpointer = 0
-    int order[size(nodes)-1] = {0}
     
     int s = 1
     int v = 3
     
-    call BFS(G, nodes, s, headpointer, order)
+    call BFS(G, nodes, s)
     print("A shortest path from source 1 to node 3:")
     call printpath(nodes, v)
     v += 2

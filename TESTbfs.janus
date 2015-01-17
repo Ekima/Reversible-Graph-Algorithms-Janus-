@@ -154,8 +154,8 @@ procedure BFS(int G[], int nodes[], int s, int headpointer, int order[])
                     fi nodes[adj[i]-1][1] = store
                 fi adj[i] = 0
                 i += 1
-            until i = size(adj)
-            i -= size(adj)
+            until i = size(G)
+            i -= size(G)
             
             // Remove the content from adj and store
             uncall getlist(G, nodes, store-1, adj)

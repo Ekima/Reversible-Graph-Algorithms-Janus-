@@ -1,0 +1,320 @@
+/*
+ * Kruskal's Algorithm
+ * Takes a weighted, undirected graph G and returns a set A containing a
+ * forest representing a single minimum spanning tree.
+ * G is represented as an adjacency matrix of size n x n, where n is the amount
+ * of nodes in G, as well as a variable edgecount containing the amount of
+ * edges in the graph.
+ * A is represented like a weighted, directed graph in an adjacency matrix and
+ * must be of size n x n.
+ */
+
+/****************** START MERGESORT *******************/
+/* Created by Holger Bock Axelsen and Tetsuo Yokoyama */
+/****************** START MERGESORT *******************/
+
+procedure merge(int a[], int l, int m, int r, int p[])
+  local int b[r+1][3]={{0}}, int c[r+1][3]={{0}}, 
+        int p_b[r+1]={0}, int p_c[r+1]={0}
+        // @\label{lst:merge:local}@
+    local int k = l
+      from  k = l // @\label{lst:merge:fstloopbegin}@
+      loop  b[k-l][0] <=> a[k][0]
+            b[k-l][1] <=> a[k][1]
+            b[k-l][2] <=> a[k][2]
+            p_b[k-l] <=> p[k]
+            k += 1
+      until k = m + 1 // @\label{lst:merge:fstloopend}@
+      from  k = m + 1 // @\label{lst:merge:sndloopbegin}@
+      loop  c[k-m-1][0] <=> a[k][0]
+            c[k-m-1][1] <=> a[k][1]
+            c[k-m-1][2] <=> a[k][2]
+            p_c[k-m-1] <=> p[k]
+            k += 1
+      until k = r + 1 // @\label{lst:merge:sndloopend}@
+    delocal int k = r + 1
+
+    b[m-l+1][0] ^= 999
+    b[m-l+1][1] ^= 999
+    b[m-l+1][2] ^= 999
+    c[r-m][0] ^= 999 // set sentinel \label{lst:merge:setsentinel}
+    c[r-m][1] ^= 999 // set sentinel \label{lst:merge:setsentinel}
+    c[r-m][2] ^= 999 // set sentinel \label{lst:merge:setsentinel}
+
+    local int i = 0, int j = 0, int k = l
+      from  k = l // @\label{lst:merge:mainloopbegin}@
+      loop  if c[j][0] < b[i][0] then
+              a[k][0] <=> c[j][0]
+              a[k][1] <=> c[j][1]
+              a[k][2] <=> c[j][2]
+              p[k] <=> p_c[j]
+              j += 1
+            else
+              a[k][0] <=> b[i][0]
+              a[k][1] <=> b[i][1]
+              a[k][2] <=> b[i][2]
+              p[k] <=> p_b[i]
+              i += 1
+            fi p[k] > m // @\label{lst:merge:middle}@
+            k += 1
+      until k = r + 1 // @\label{lst:merge:mainloopend}@
+    delocal int i = m-l+1, int j = r-m, int k = r+1
+    
+    b[m-l+1][0] ^= 999
+    b[m-l+1][1] ^= 999
+    b[m-l+1][2] ^= 999
+    c[r-m][0] ^= 999  // zero clear sentinel \label{lst:merge:clearsentinel}
+    c[r-m][1] ^= 999  // zero clear sentinel \label{lst:merge:clearsentinel}
+    c[r-m][2] ^= 999  // zero clear sentinel \label{lst:merge:clearsentinel}
+  delocal int b[r+1][3]={{0}}, int c[r+1][3]={{0}},
+          int p_b[r+1]={0}, int p_c[r+1]={0}
+          // @\label{lst:merge:delocal}@
+
+procedure msort_sub(int a[], int l, int r, int p[])
+  if l < r then
+    call msort_sub(a,l,(l+r)/2,p)
+    call msort_sub(a,(l+r)/2+1,r,p)
+    call merge(a,l,(l+r)/2,r,p)
+  fi l < r
+
+procedure msort(int a[], int n, int p[])
+  call msort_sub(a,0,n-1,p)
+
+/******************* END MERGESORT ********************/
+/* Created by Holger Bock Axelsen and Tetsuo Yokoyama */
+/******************* END MERGESORT ********************/  
+
+/*
+ * extractedges extract the edge information (starting node, ending node,
+ * weight) of a graph G and returns it in a list.
+ *
+ * Parameters:
+ * int array[]      An adjacency matrix.
+ * int edgelist[]   An empty array of size |E|
+ *
+ * Returns:
+ * A list of all edges in G.
+ */
+procedure extractedges(int G[], int edgelist[])
+    local int i = 0, int j = 0, int s = 0
+    
+    from i = 0 do
+        from j = i do
+            if G[i][j] != 0 then
+                edgelist[s][0] += G[i][j]
+                edgelist[s][1] += i+1
+                edgelist[s][2] += j+1
+                s += 1
+            fi G[i][j] != 0
+            j += 1
+        until j = size(G)
+        i += 1
+        j -= size(G) - i
+    until i = size(G)
+    
+    delocal int i = size(G), int j = size(G), int s = size(G)
+
+/**** Begin disjoint set data structure ****/
+
+/*
+ * makeset creates a node for a single element and adds it to a new set.
+ *
+ * Parameters:
+ * int x            Numbered element to be added - Should NOT be in the list
+ *                  currently.
+ * int nodes[]      A list of all current nodes added to the data structure. 
+ * int sets[]       A list of all current sets added to the data structure.
+ *
+ * Postcondition:
+ * A disjoint set data structure with the added element
+ */
+procedure makeset(int x, int nodes[], int sets[])
+    nodes[x][0] -= 1 // Next element, initially points to no element
+    nodes[x][1] += x // Part of its own set
+    sets[x][0] += x // Head
+    sets[x][1] += x // Tail
+    sets[x][2] += 1 // Length
+
+/*
+ * searchnodes traverses through a linked list and changes the parent sets
+ *
+ * Parameters:
+ * int i            Current node
+ * int newset       The new parent set
+ * int oldset       The current parent set
+ * int nodes[]      A list of all current nodes added to the data structure. 
+ * int sets[]       A list of all current sets added to the data structure.
+ *
+ * Postcondition:
+ * A disjoint set data structure with the added element
+ */
+procedure searchnodes(int i, int newset, int oldset, int nodes[], int sets[])
+    nodes[i][1] -= oldset
+    nodes[i][1] += newset
+    if nodes[i][0] != -1 then
+        call searchnodes(nodes[i][0], newset, oldset, nodes, sets)
+    fi nodes[i][0] != -1
+
+/*
+ * union combines two sets.
+ *
+ * Parameters:
+ * int x            First set
+ * int y            Second set
+ * int nodes[]      A list of all current nodes added to the data structure. 
+ * int sets[]       A list of all current sets added to the data structure.
+ *
+ * Postcondition:
+ * The combined set of x and y are added to the data structure
+ */
+procedure union(int x, int y, int nodes[], int sets[],
+                int splits[], int splitcounter)
+    if sets[nodes[y][1]][2] = 0 || sets[nodes[x][1]][2] = 0 then
+        error("Trying to perform union with an empty set")
+    fi sets[nodes[y][1]][2] = 0 || sets[nodes[x][1]][2] = 0
+    
+    local int z = 0
+    if sets[nodes[x][1]][2] >= sets[nodes[y][1]][2] then
+        splits[splitcounter][3] += x
+        z += y
+    else
+        splits[splitcounter][3] += y
+        z += x
+    fi sets[nodes[x][1]][2] >= sets[nodes[y][1]][2]
+    
+    // Tail of first set
+    splits[splitcounter][0] += sets[nodes[splits[splitcounter][3]][1]][1]
+    splits[splitcounter][1] += sets[nodes[z][1]][0] // Head of second set
+    splits[splitcounter][2] += sets[nodes[z][1]][2] // Length of second set
+    
+    // Set the tail of the first set to point to the head of the second set
+    nodes[splits[splitcounter][3]][0] += splits[splitcounter][1] + 1
+    
+    // Set the tail of the first set to the tail of the second set
+    sets[nodes[splits[splitcounter][3]][1]][1] -= splits[splitcounter][0]
+    local int ytail = sets[nodes[z][1]][1]
+    sets[nodes[splits[splitcounter][3]][1]][1] += ytail
+    delocal int ytail = sets[nodes[z][1]][1]
+    
+    // Set all values in the second set to 0
+    sets[nodes[z][1]][0] -= splits[splitcounter][1]
+    sets[nodes[z][1]][1] -= sets[nodes[splits[splitcounter][3]][1]][1]
+    sets[nodes[z][1]][2] -= splits[splitcounter][2]
+    
+    call searchnodes(splits[splitcounter][1], nodes[splits[splitcounter][3]][1],
+                     splits[splitcounter][1], nodes, sets)
+    
+    // Add the length of the second set to the length of the first set
+    sets[nodes[splits[splitcounter][3]][1]][2] += splits[splitcounter][2]
+    
+    if splits[splitcounter][3] = x then
+        z -= y
+    else
+        z -= x
+    fi splits[splitcounter][3] = x
+    delocal int z = 0
+    splitcounter += 1
+    
+/*
+ * checksets checks if two nodes are in the same set.
+ *
+ * Parameters:
+ * int x            First node
+ * int y            Second node
+ * int nodes[]      A list of all current nodes added to the data structure. 
+ * int found        A truth value, must initially be 0
+ *
+ * Postcondition:
+ * found = 1 if the nodes are in the same set, found = 0 if they are not
+ */
+procedure checksets(int x, int y, int nodes[], int found)
+    if nodes[x][1] = nodes[y][1] then
+        found += 1
+    fi nodes[x][1] = nodes[y][1]
+
+/***** End disjoint set data structure *****/
+
+/*
+ * mstkruskal is the main algorithm, creating a minimum spanning tree from a
+ * undirected, weighted graph.
+ *
+ * Parameters:
+ * int G[]          An adjacency matrix representing G
+ * int edgecount    The number of edges in the graph G
+ * int A[]          An empty adjacency matrix for storing the result
+ *
+ * Returns:
+ * An adjacency matrix containing a minimum spanning tree of G.
+ */
+procedure mstkruskal(int G[], int edgecount, int A[],
+                     int nodes[], int set[], int splitgarbage[])
+    // Initialize variables for loop, checksets and split
+    local int i = 0, int found = 0, int splitcounter = 0,
+          int sets[size(G)][3] = {{0}, {0}, {0}}
+    
+    // Gather all of the edges into a list.
+    local int edges[edgecount][3] = {{0}}
+    call extractedges(G, edges)
+    // Sort the edge list using mergesort
+    local int p[edgecount] = {0}
+    local int r = 0
+    from r = 0 do
+        p[r] += r
+        r += 1
+    until r = edgecount
+    call msort(edges, edgecount, p)
+    
+    from i = 0 do // Create the edgeset
+        call makeset(i, nodes, sets)
+        i += 1
+    until i = edgecount
+    i -= edgecount
+    
+    from i = 0 do // Go through all edges
+        // checksets checks two nodes combined by an edge are in the same subset
+        call checksets(edges[i][1]-1, edges[i][2]-1, nodes, found)
+        if found = 0 then
+            // If they aren't, the two nodes are connected
+            uncall checksets(edges[i][1]-1, edges[i][2]-1, nodes, found)
+            A[edges[i][1]-1][edges[i][2]-1] += edges[i][0]
+            A[edges[i][2]-1][edges[i][1]-1] += edges[i][0]
+            local int x = edges[i][1]-1, int y = edges[i][2]-1
+            call union(x,y,
+                       nodes, sets, splitgarbage, splitcounter)
+            delocal int x = edges[i][1]-1, int y = edges[i][2]-1
+        else
+            uncall checksets(edges[i][1]-1, edges[i][2]-1, nodes, found)
+        fi A[edges[i][1]-1][edges[i][2]-1] != 0
+        i += 1
+    until i = edgecount
+    
+    sets[nodes[0][1]][0] <=> set[0]
+    sets[nodes[0][1]][1] <=> set[1]
+    sets[nodes[0][1]][2] <=> set[2]
+    
+    // Delocal values.
+    uncall msort(edges, edgecount, p)
+    from r = edgecount do
+        p[r-1] -= r-1
+        r -= 1
+    until r = 0
+    delocal int r = 0
+    delocal int p[edgecount] = {0}
+    uncall extractedges(G, edges)
+    delocal int edges[edgecount][3] = {{0}}
+    delocal int i = edgecount, int found = 0, int splitcounter = size(G) - 1,
+            int sets[size(G)][3] = {{0}, {0}, {0}}
+
+procedure main()
+    int G[][] = {{0, 2, 0, 5, 0},
+                 {2, 0, 0, 0, 4},
+                 {0, 0, 0, 4, 0},
+                 {5, 0, 4, 0, 7},
+                 {0, 4, 0, 7, 0}}
+    int A[5][5]
+    int nodes[size(G)][2]
+    int set[3]
+    int splitgarbage[size(G)-1][4]
+    
+    call mstkruskal(G, 5, A, nodes, set, splitgarbage)
+    
